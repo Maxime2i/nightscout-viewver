@@ -117,7 +117,7 @@ export function TreatmentChart({ treatments, selectedDate }: { treatments: any[]
   console.log("tempBasalPoints", tempBasalPoints);
   return (
     <ResponsiveContainer width="100%" height="20%">
-      <LineChart data={chartData} margin={{ top: 10, left: 5, bottom: 0 }}>
+      <LineChart data={chartData} margin={{ top: 10, left: 4, right: 4, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
           dataKey="date"

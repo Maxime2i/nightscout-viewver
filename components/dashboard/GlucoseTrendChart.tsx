@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  Label,
 } from "recharts";
 import {
   Card,
@@ -147,6 +148,43 @@ export function GlucoseTrendChart({ data, treatments }: { data: any[], treatment
     }
   };
 
+  const INSULIN_SCALE_FACTOR = 5;
+  const CARBS_SCALE_FACTOR = 0.8;
+
+  const bolusTreatments = treatments
+    .filter(t => {
+      if (!t.date || !t.eventType || !t.insulin) return false;
+      const d = new Date(t.date);
+      const isSameDay =
+        d.getDate() === selectedDate.getDate() &&
+        d.getMonth() === selectedDate.getMonth() &&
+        d.getFullYear() === selectedDate.getFullYear();
+      return (
+        isSameDay &&
+        (t.eventType === "Meal Bolus" || t.eventType === "Correction Bolus")
+      );
+    })
+    .map(t => ({
+      date: new Date(t.date).getTime(),
+      type: t.eventType,
+      insulin: t.insulin,
+    }));
+
+  const carbTreatments = treatments
+    .filter(t => {
+      if (!t.date || !t.carbs || t.carbs === 0) return false;
+      const d = new Date(t.date);
+      const isSameDay =
+        d.getDate() === selectedDate.getDate() &&
+        d.getMonth() === selectedDate.getMonth() &&
+        d.getFullYear() === selectedDate.getFullYear();
+      return isSameDay;
+    })
+    .map(t => ({
+      date: new Date(t.date).getTime(),
+      carbs: t.carbs,
+    }));
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -192,6 +230,55 @@ export function GlucoseTrendChart({ data, treatments }: { data: any[], treatment
             <Tooltip content={<CustomTooltip />} />
             <ReferenceLine y={180} stroke="red" strokeDasharray="3 3" />
             <ReferenceLine y={70} stroke="red" strokeDasharray="3 3" />
+
+            {carbTreatments.map((carbs, index) => (
+              <ReferenceLine
+                key={`carbs-${index}`}
+                segment={[
+                  { x: carbs.date, y: 40 },
+                  { x: carbs.date, y: 40 + carbs.carbs * CARBS_SCALE_FACTOR },
+                ]}
+                stroke={"#f59e0b"}
+                strokeWidth={2}
+              >
+                <Label
+                  value={`${carbs.carbs} g`}
+                  angle={-45}
+                  position="top"
+                  textAnchor="end"
+                  fill={"#f59e0b"}
+                  fontSize="12"
+                  dx={10}
+                  dy={-5}
+                />
+              </ReferenceLine>
+            ))}
+            
+            {bolusTreatments.map((bolus, index) => (
+              <ReferenceLine
+                key={`bolus-${index}`}
+                segment={[
+                  { x: bolus.date, y: 40 },
+                  { x: bolus.date, y: 40 + bolus.insulin * INSULIN_SCALE_FACTOR },
+                ]}
+                stroke={bolus.type === "Meal Bolus" ? "#be185d" : "#10b981"}
+                strokeWidth={2}
+              >
+                <Label
+                  value={`${bolus.insulin} U`}
+                  angle={-45}
+                  position="top"
+                  textAnchor="end"
+                  fill={bolus.type === "Meal Bolus" ? "#be185d" : "#10b981"}
+                  fontSize="12"
+                  dx={10}
+                  dy={-5}
+                />
+              </ReferenceLine>
+            ))}
+
+            
+
             <Line
               type="monotone"
               dataKey="glucose"
@@ -202,10 +289,25 @@ export function GlucoseTrendChart({ data, treatments }: { data: any[], treatment
               connectNulls={false}
             />
           </LineChart>
-
-
-
         </ResponsiveContainer>
+        <div className="flex justify-center items-center gap-6 mt-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-0.5 bg-blue-500" />
+            <span>Glycémie</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3" style={{ backgroundColor: '#f59e0b' }} />
+            <span>Bolus Repas</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3" style={{ backgroundColor: '#10b981' }} />
+            <span>Bolus Correction</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3" style={{ backgroundColor: '#be185d' }} />
+            <span>Glucides</span>
+          </div>
+        </div>
           <TreatmentChart treatments={treatments} selectedDate={selectedDate}/>
 
 
