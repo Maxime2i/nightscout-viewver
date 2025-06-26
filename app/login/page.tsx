@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,17 @@ export default function LoginPage() {
       router.push("/");
     }
   };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const nightscoutUrl = urlParams.get('nightscoutUrl');
+    const nightscoutToken = urlParams.get('nightscoutToken');
+    if (nightscoutUrl && nightscoutToken) {
+      localStorage.setItem("nightscoutUrl", nightscoutUrl);
+      localStorage.setItem("nightscoutToken", nightscoutToken);
+      router.push("/");
+    }
+  }, []);
 
   return (
     <div className="flex items-center justify-center min-h-screen">

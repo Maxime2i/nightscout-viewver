@@ -7,6 +7,8 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
+import { LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function Header({ date, setDate }: { date: DateRange | undefined, setDate: (date: DateRange | undefined) => void }) {
   const handleCreatePDF = () => {
@@ -17,6 +19,13 @@ export function Header({ date, setDate }: { date: DateRange | undefined, setDate
     const from = format(date.from, "yyyy-MM-dd");
     const to = date.to ? format(date.to, "yyyy-MM-dd") : from;
     alert(`Créer un PDF du ${from} au ${to}`);
+  };
+
+  const router = useRouter();
+  const logout = () => {
+    localStorage.removeItem("nightscoutUrl");
+    localStorage.removeItem("nightscoutToken");
+    router.push("/login");
   };
 
   return (
@@ -65,6 +74,9 @@ export function Header({ date, setDate }: { date: DateRange | undefined, setDate
         </Popover>
         <Button onClick={handleCreatePDF} className="h-8 px-4">
           Créer un PDF
+        </Button>
+        <Button onClick={logout} className="h-8 px-4">
+          <LogOut className="w-4 h-4" />
         </Button>
       </div>
     </header>

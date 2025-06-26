@@ -12,6 +12,9 @@ import { DateRange } from "react-day-picker";
 import { ReferenceDot } from "recharts";
 import { format } from "date-fns";
 import { TreatmentChart } from "@/components/dashboard/TreatmentChart";
+import { DailyStats } from "@/components/dashboard/DailyStats";
+import { ShareLinks } from "@/components/dashboard/ShareLinks";
+import { TimeInRange } from "@/components/dashboard/TimeInRange";
 
 export default function Home() {
   const router = useRouter();
@@ -21,6 +24,12 @@ export default function Home() {
     const from = new Date();
     from.setDate(to.getDate() - 6);
     return { from, to };
+  });
+
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now;
   });
 
   useEffect(() => {
@@ -99,28 +108,15 @@ export default function Home() {
             <StatsGrid data={data} />
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
-                <GlucoseTrendChart data={data} treatments={treatments} />
+                <GlucoseTrendChart data={data} treatments={treatments} selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
               
-                <ReferenceDot
-                  x={bolusPoints[0]?.time}
-                  y={80}
-                  r={6}
-                  fill="blue"
-                  stroke="white"
-                  label={{ value: bolusPoints[0]?.insulin + "U", position: "bottom", fill: "blue", fontSize: 10 }}
-                />
-                <ReferenceDot
-                  x={carbsPoints[0]?.time}
-                  y={70}
-                  r={6}
-                  fill="orange"
-                  stroke="white"
-                  label={{ value: carbsPoints[0]?.carbs + "g", position: "top", fill: "orange", fontSize: 10 }}
-                />
+              
+             
               </div>
               <div className="space-y-6">
-                <QuickActions />
-                <RecentAlerts />
+                <DailyStats data={data} treatments={treatments} selectedDate={selectedDate} />
+                <TimeInRange data={data} treatments={treatments} selectedDate={selectedDate} />
+                <ShareLinks />
               </div>
             </div>
           </>

@@ -45,7 +45,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function GlucoseTrendChart({ data, treatments }: { data: any[], treatments: any[] }) {
+export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedDate }: { data: any[], treatments: any[], selectedDate: Date, setSelectedDate: (date: Date) => void }) {
 
   // Calcul des dates disponibles (jours avec données)
   const availableDates = Array.from(
@@ -58,16 +58,6 @@ export function GlucoseTrendChart({ data, treatments }: { data: any[], treatment
 
   const minDate = availableDates.length ? new Date(availableDates[0]) : null;
   const maxDate = availableDates.length ? new Date(availableDates[availableDates.length - 1]) : null;
-
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    // Si la date du jour n'a pas de données, prendre la plus récente disponible
-    if (availableDates.length && !availableDates.includes(now.getTime())) {
-      return new Date(availableDates[availableDates.length - 1]);
-    }
-    return now;
-  });
 
   const isPrevDisabled = !!minDate && selectedDate.getTime() <= minDate.getTime();
   const isNextDisabled = !!maxDate && selectedDate.getTime() >= maxDate.getTime();
