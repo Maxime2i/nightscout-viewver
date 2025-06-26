@@ -127,8 +127,10 @@ export function TreatmentChart({ treatments, selectedDate, profil }: { treatment
     const bolus = bolusPoints.find(p => p.date === ts)?.insulin || null;
     const carbs = carbsPoints.find(p => p.date === ts)?.carbs || null;
     const basalEvent = tempBasalPoints.find(b => b.start === ts);
-    const basal = tempBasalPoints.find(b => ts >= b.start && ts < b.end)?.rate || 0;
-    const basalProfile = getBasalProfileValueAt(ts);
+    const tempBasalActive = tempBasalPoints.find(b => ts >= b.start && ts < b.end);
+    const basal = tempBasalActive?.rate || 0;
+    // Si une temp basal est active, on ne met pas la valeur de basalProfile
+    const basalProfile = tempBasalActive ? null : getBasalProfileValueAt(ts);
     return {
       date: ts,
       insulin: bolus,
