@@ -45,7 +45,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedDate }: { data: any[], treatments: any[], selectedDate: Date, setSelectedDate: (date: Date) => void }) {
+export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedDate, profil }: { data: any[], treatments: any[], selectedDate: Date, setSelectedDate: (date: Date) => void, profil?: any }) {
 
   // Calcul des dates disponibles (jours avec données)
   const availableDates = Array.from(
@@ -298,7 +298,7 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
             <span>Glucides</span>
           </div>
         </div>
-          <TreatmentChart treatments={treatments} selectedDate={selectedDate}/>
+          <TreatmentChart treatments={treatments} selectedDate={selectedDate} profil={profil}/>
 
 
       </CardContent>

@@ -44,7 +44,7 @@ export default function Home() {
   const [data, setData] = useState<any[]>([]);
   const [treatments, setTreatments] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-
+  const [profil, setProfil] = useState<any>(null);
   useEffect(() => {
     if (url && date?.from && date?.to) {
       setLoading(true);
@@ -54,14 +54,17 @@ export default function Home() {
 
       const entriesUrl = `${url}/api/v1/entries.json?token=${token}&find[date][$gte]=${from}&find[date][$lte]=${to}&count=10000`;
       const treatmentsUrl = `${url}/api/v1/treatments.json?token=${token}&find[created_at][$gte]=${new Date(from).toISOString()}&find[created_at][$lte]=${new Date(to).toISOString()}&count=10000`;
+      const profilUrl = `${url}/api/v1/profile.json?token=${token}`;
 
       Promise.all([
         fetch(entriesUrl).then(res => res.json()),
-        fetch(treatmentsUrl).then(res => res.json())
+        fetch(treatmentsUrl).then(res => res.json()),
+        fetch(profilUrl).then(res => res.json())
       ])
-        .then(([entries, treatments]) => {
+        .then(([entries, treatments, profil]) => {
           setData(entries);
           setTreatments(treatments);
+          setProfil(profil);
           setLoading(false);
           console.log("entries", entries);
           console.log("treatments", treatments);
@@ -86,6 +89,8 @@ export default function Home() {
       carbs: t.carbs
     }));
 
+  console.log("profil", profil);
+
   if (!url) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -108,7 +113,7 @@ export default function Home() {
             <StatsGrid data={data} />
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
-                <GlucoseTrendChart data={data} treatments={treatments} selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+                <GlucoseTrendChart data={data} treatments={treatments} selectedDate={selectedDate} setSelectedDate={setSelectedDate} profil={profil} />
               
               
              

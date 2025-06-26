@@ -1,4 +1,4 @@
-import { ResponsiveContainer, LineChart, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceDot, ReferenceArea } from "recharts";
+import { ResponsiveContainer, AreaChart, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceDot, ReferenceArea, Line, Area } from "recharts";
 import { format } from "date-fns";
 import React from "react";
 
@@ -24,7 +24,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   return null;
 };
 
-export function TreatmentChart({ treatments, selectedDate }: { treatments: any[], selectedDate: Date }) {
+export function TreatmentChart({ treatments, selectedDate, profil }: { treatments: any[], selectedDate: Date, profil?: any }) {
   console.log("selectedDate", selectedDate);
 
   // Début et fin de la journée sélectionnée
@@ -85,6 +85,33 @@ export function TreatmentChart({ treatments, selectedDate }: { treatments: any[]
       };
     });
 
+  // Trouver le profil actif pour le jour sélectionné
+  let activeProfile: any = null;
+  if (profil && Array.isArray(profil)) {
+    const selectedDayTs = new Date(selectedDate).setHours(0, 0, 0, 0);
+    activeProfile = profil
+      .filter((p: any) => p.date <= selectedDayTs)
+      .sort((a: any, b: any) => b.date - a.date)[0];
+  }
+
+  // Fonction pour trouver la valeur de basal programmée à un instant donné
+  function getBasalProfileValueAt(ts: number) {
+    if (!activeProfile) return 0;
+    const basalArray = activeProfile.store[activeProfile.defaultProfile].basal;
+    let last = basalArray[0];
+    for (const b of basalArray) {
+      const d = new Date(selectedDate);
+      const [h, m] = b.time.split(":");
+      d.setHours(Number(h), Number(m), 0, 0);
+      if (d.getTime() <= ts) {
+        last = b;
+      } else {
+        break;
+      }
+    }
+    return last.value;
+  }
+
   // Récupère toutes les heures nécessaires pour l'axe X
   const allTimestampsSet: Set<number> = new Set([
     ...hourTickTimestamps,
@@ -101,11 +128,13 @@ export function TreatmentChart({ treatments, selectedDate }: { treatments: any[]
     const carbs = carbsPoints.find(p => p.date === ts)?.carbs || null;
     const basalEvent = tempBasalPoints.find(b => b.start === ts);
     const basal = tempBasalPoints.find(b => ts >= b.start && ts < b.end)?.rate || 0;
+    const basalProfile = getBasalProfileValueAt(ts);
     return {
       date: ts,
       insulin: bolus,
       carbs: carbs,
       basal: basal,
+      basalProfile: basalProfile,
       tempBasal: basalEvent ? {
         start: format(new Date(basalEvent.start), "HH:mm"),
         end: format(new Date(basalEvent.end), "HH:mm"),
@@ -117,7 +146,7 @@ export function TreatmentChart({ treatments, selectedDate }: { treatments: any[]
   console.log("tempBasalPoints", tempBasalPoints);
   return (
     <ResponsiveContainer width="100%" height="20%">
-      <LineChart data={chartData} margin={{ top: 10, left: 4, right: 4, bottom: 0 }}>
+      <AreaChart data={chartData} margin={{ top: 10, left: 4, right: 4, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
           dataKey="date"
@@ -156,9 +185,26 @@ export function TreatmentChart({ treatments, selectedDate }: { treatments: any[]
             />
           ) : null
         )}
-                    <Tooltip content={<CustomTooltip />}/>
-
-      </LineChart>
+        <Area
+          yAxisId="left"
+          type="stepAfter"
+          dataKey="basalProfile"
+          stroke="#8fd3e8"
+          fill="#8fd3e8"
+          fillOpacity={0.5}
+          isAnimationActive={false}
+          name="Basal programmée"
+        />
+        <Line
+          yAxisId="left"
+          type="stepAfter"
+          dataKey="basalProfile"
+          stroke="#8fd3e8"
+          strokeWidth={2}
+          dot={false}
+          name="Basal programmée"
+        />
+      </AreaChart>
     </ResponsiveContainer>
   );
 } 
