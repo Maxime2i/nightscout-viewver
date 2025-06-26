@@ -71,8 +71,22 @@ export function GlucoseTrendChart({ data, treatments }: { data: any[], treatment
   const isPrevDisabled = !!minDate && selectedDate.getTime() <= minDate.getTime();
   const isNextDisabled = !!maxDate && selectedDate.getTime() >= maxDate.getTime();
 
-  // Ticks horaires fixes pour l'axe X (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 23:00)
+  // Ticks horaires fixes pour l'axe X (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 24:00)
   const hourTicks = ["00:00", "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00", "24:00"];
+
+  const dayStartTs = new Date(selectedDate).setHours(0, 0, 0, 0);
+  const dayEndTs = new Date(selectedDate).setHours(24, 0, 0, 0);
+
+  const hourTickTimestamps = hourTicks.map(tick => {
+    const d = new Date(selectedDate);
+    const [h, m] = tick.split(':');
+    d.setHours(Number(h), Number(m), 0, 0);
+    return d.getTime();
+  });
+
+  const formatXAxis = (tickItem: number) => {
+    return format(new Date(tickItem), 'HH:mm');
+  };
 
   // Points réels du jour sélectionné
   const realPoints = data
@@ -167,7 +181,13 @@ export function GlucoseTrendChart({ data, treatments }: { data: any[], treatment
           
           <LineChart data={chartDataDay}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="time" ticks={hourTicks} allowDuplicatedCategory={false} />
+            <XAxis
+              dataKey="date"
+              type="number"
+              domain={[dayStartTs, dayEndTs]}
+              ticks={hourTickTimestamps}
+              tickFormatter={formatXAxis}
+            />
             <YAxis domain={[40, 300]} ticks={[40, 80, 120, 160, 200, 240, 280, 300]} />
             <Tooltip content={<CustomTooltip />} />
             <ReferenceLine y={180} stroke="red" strokeDasharray="3 3" />
