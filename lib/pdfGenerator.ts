@@ -20,6 +20,34 @@ interface PdfGenerationData {
   date: DateRange | undefined;
 }
 
+interface StatisticsData {
+  joursEvalues: number;
+  nbMesures: number;
+  nbPump: number;
+  nbCapteur: number;
+  values: number[];
+  below70: number[];
+  inRange: number[];
+  above180: number[];
+  above240: number[];
+  pctBelow: number;
+  pctIn: number;
+  pct180_240: number;
+  pctAbove240: number;
+  minVal: number;
+  maxVal: number;
+  mean: number;
+  std: number;
+  gvi: number;
+  pgs: number;
+  hba1c: string;
+  jours: number;
+  totalGlucides: number;
+  totalBolus: number;
+  realBasalPerDay: number;
+  totalInsuline: number;
+}
+
 export class NightscoutPdfGenerator {
   private doc: jsPDF;
   private data: NightscoutEntry[];
@@ -117,7 +145,7 @@ export class NightscoutPdfGenerator {
     return totalBasal / nbDays;
   }
 
-  private calculateStatistics() {
+  private calculateStatistics(): StatisticsData {
     // Jours évalués
     const uniqueDays = new Set(
       this.data.map((e) => format(new Date(e.date), "yyyy-MM-dd"))
@@ -247,7 +275,7 @@ export class NightscoutPdfGenerator {
   }
 
   private addHeader(): number {
-    let y = 18;
+    const y = 18;
     
     // Titre principal
     this.doc.setFontSize(28);
@@ -303,7 +331,7 @@ export class NightscoutPdfGenerator {
     return y + 10;
   }
 
-  private addBasicStats(stats: any, y: number): number {
+  private addBasicStats(stats: StatisticsData, y: number): number {
     this.doc.setFontSize(11);
     this.doc.setTextColor(0, 0, 0);
     this.doc.text(this.t('PdfGeneration.daysEvaluated'), 20, y);
@@ -322,7 +350,7 @@ export class NightscoutPdfGenerator {
     return y + 36;
   }
 
-  private addTargetZone(stats: any, y: number): number {
+  private addTargetZone(stats: StatisticsData, y: number): number {
     this.doc.setFontSize(11);
     this.doc.text(this.t('PdfGeneration.standardTargetZone'), 20, y);
     y += 6;
@@ -390,7 +418,7 @@ export class NightscoutPdfGenerator {
     return legendY + 12;
   }
 
-  private addPeriodStats(stats: any, y: number): number {
+  private addPeriodStats(stats: StatisticsData, y: number): number {
     // Séparateur
     this.doc.setDrawColor(150);
     this.doc.line(15, y, 195, y);
@@ -453,7 +481,7 @@ export class NightscoutPdfGenerator {
     return y + 8;
   }
 
-  private addTreatments(stats: any, y: number): number {
+  private addTreatments(stats: StatisticsData, y: number): number {
     // Séparateur
     this.doc.setDrawColor(150);
     this.doc.line(15, y, 195, y);
@@ -773,7 +801,7 @@ export class NightscoutPdfGenerator {
     
     // Deuxième ligne
     x = 25;
-    let legendY2 = legendY + 15;
+    const legendY2 = legendY + 15;
     
     // Glucides
     this.doc.setDrawColor(245, 158, 11);
@@ -886,44 +914,90 @@ export class NightscoutPdfGenerator {
   }
 
   private drawGlucoseAverageCurve(chartX: number, chartY: number, chartWidth: number, chartHeight: number, minY: number, maxY: number): void {
-    // Calculer les moyennes de glycémie par intervalles de 5 minutes
-    const minuteGlucoseAverages = this.calculateMinuteGlucoseAverages();
+    // Calculer les percentiles et moyennes de glycémie
+    const glucoseData = this.calculateGlucosePercentiles();
     
-    // Points pour dessiner la courbe
-    const points: { x: number, y: number }[] = [];
+    // Points pour dessiner les courbes
+    const avgPoints: { x: number, y: number }[] = [];
+    const p25Points: { x: number, y: number }[] = [];
+    const p75Points: { x: number, y: number }[] = [];
     
     // Calculer les coordonnées de chaque point (par intervalles de 5 minutes)
     for (let interval = 0; interval < 288; interval++) { // 24h * 60min / 5min = 288 intervalles
-      const avgGlucose = minuteGlucoseAverages[interval];
+      const avgGlucose = glucoseData.averages[interval];
+      const p25Glucose = glucoseData.p25[interval];
+      const p75Glucose = glucoseData.p75[interval];
+      
       if (avgGlucose > 0) { // Seulement si on a des données pour cet intervalle
         const timeRatio = interval / 288; // Ratio par rapport à 24h
         const x = chartX + timeRatio * chartWidth;
-        const y = chartY + chartHeight - ((avgGlucose - minY) / (maxY - minY)) * chartHeight;
-        points.push({ x, y });
+        
+        // Coordonnées Y pour chaque courbe
+        const avgY = chartY + chartHeight - ((avgGlucose - minY) / (maxY - minY)) * chartHeight;
+        const p25Y = chartY + chartHeight - ((p25Glucose - minY) / (maxY - minY)) * chartHeight;
+        const p75Y = chartY + chartHeight - ((p75Glucose - minY) / (maxY - minY)) * chartHeight;
+        
+        avgPoints.push({ x, y: avgY });
+        p25Points.push({ x, y: p25Y });
+        p75Points.push({ x, y: p75Y });
       }
     }
     
-    // Dessiner la courbe si on a au moins 2 points
-    if (points.length >= 2) {
-      this.doc.setDrawColor(255, 69, 0); // Rouge-orangé pour la courbe de glycémie
-      this.doc.setLineWidth(0.5);
+    // Dessiner la zone de variabilité (entre P25 et P75) en premier
+    if (p25Points.length >= 2 && p75Points.length >= 2) {
+      this.doc.setFillColor(255, 69, 0, 0.2); // Orange très transparent
       
-      // Dessiner les segments de la courbe
-      for (let i = 0; i < points.length - 1; i++) {
-        this.doc.line(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
+      // Créer un polygon pour la zone entre P25 et P75
+      const polygonPath = [];
+      
+      // Ajouter les points P75 de gauche à droite
+      for (let i = 0; i < p75Points.length; i++) {
+        polygonPath.push([p75Points[i].x, p75Points[i].y]);
       }
       
-      // Dessiner des petits cercles aux points de données
+      // Ajouter les points P25 de droite à gauche
+      for (let i = p25Points.length - 1; i >= 0; i--) {
+        polygonPath.push([p25Points[i].x, p25Points[i].y]);
+      }
+      
+      // Dessiner le polygon (zone de variabilité)
+      if (polygonPath.length > 0) {
+        this.doc.setDrawColor(255, 69, 0, 0.3);
+        this.doc.setLineWidth(0.3);
+        
+        // Approximation du polygon avec des lignes
+        for (let i = 0; i < p75Points.length - 1; i++) {
+          this.doc.line(p75Points[i].x, p75Points[i].y, p75Points[i + 1].x, p75Points[i + 1].y);
+        }
+        for (let i = 0; i < p25Points.length - 1; i++) {
+          this.doc.line(p25Points[i].x, p25Points[i].y, p25Points[i + 1].x, p25Points[i + 1].y);
+        }
+      }
+    }
+    
+    // Dessiner la courbe moyenne par-dessus
+    if (avgPoints.length >= 2) {
+      this.doc.setDrawColor(255, 69, 0); // Rouge-orangé pour la courbe de glycémie moyenne
+      this.doc.setLineWidth(2);
+      
+      // Dessiner les segments de la courbe moyenne
+      for (let i = 0; i < avgPoints.length - 1; i++) {
+        this.doc.line(avgPoints[i].x, avgPoints[i].y, avgPoints[i + 1].x, avgPoints[i + 1].y);
+      }
+      
+      // Dessiner des petits cercles aux points de données moyennes
       this.doc.setFillColor(255, 69, 0);
-      points.forEach(point => {
-        this.doc.circle(point.x, point.y, 0.5, "F");
+      avgPoints.forEach((point, index) => {
+        if (index % 12 === 0) { // Afficher un point toutes les heures (12 intervalles de 5min)
+          this.doc.circle(point.x, point.y, 1, "F");
+        }
       });
     }
   }
 
-  private calculateMinuteGlucoseAverages(): number[] {
+  private calculateGlucosePercentiles(): { p25: number[], p75: number[], averages: number[] } {
     // 288 intervalles de 5 minutes (24h * 60min / 5min = 288)
-    const intervalData = new Array(288).fill(0).map(() => ({ total: 0, count: 0 }));
+    const intervalData = new Array(288).fill(0).map(() => ({ values: [] as number[] }));
     
     // Grouper les données de glycémie par intervalles de 5 minutes
     this.data.forEach(entry => {
@@ -932,41 +1006,45 @@ export class NightscoutPdfGenerator {
       const intervalIndex = Math.floor(totalMinutes / 5); // Intervalle de 5 minutes
       
       if (entry.sgv && entry.sgv > 0 && intervalIndex < 288) {
-        intervalData[intervalIndex].total += entry.sgv;
-        intervalData[intervalIndex].count++;
+        intervalData[intervalIndex].values.push(entry.sgv);
       }
     });
     
-    // Calculer les moyennes et lisser avec une moyenne mobile
-    const averages = intervalData.map(data => data.count > 0 ? data.total / data.count : 0);
+    // Calculer les percentiles et moyennes pour chaque intervalle
+    const p25Array: number[] = [];
+    const p75Array: number[] = [];
+    const averagesArray: number[] = [];
     
-    // Appliquer un lissage avec une moyenne mobile sur 3 points pour une courbe plus fluide
-    const smoothedAverages = new Array(288).fill(0);
-    for (let i = 0; i < 288; i++) {
-      let sum = 0;
-      let count = 0;
-      
-      // Moyenne des 3 points (précédent, actuel, suivant)
-      for (let j = Math.max(0, i - 1); j <= Math.min(287, i + 1); j++) {
-        if (averages[j] > 0) {
-          sum += averages[j];
-          count++;
-        }
+    intervalData.forEach(data => {
+      if (data.values.length > 0) {
+        // Trier les valeurs
+        const sortedValues = data.values.sort((a, b) => a - b);
+        const n = sortedValues.length;
+        
+        // Calculer les percentiles
+        const p25Index = Math.floor(n * 0.25);
+        const p75Index = Math.floor(n * 0.75);
+        
+        p25Array.push(sortedValues[p25Index] || 0);
+        p75Array.push(sortedValues[p75Index] || 0);
+        
+        // Calculer la moyenne
+        const average = sortedValues.reduce((sum, val) => sum + val, 0) / n;
+        averagesArray.push(average);
+      } else {
+        p25Array.push(0);
+        p75Array.push(0);
+        averagesArray.push(0);
       }
-      
-      smoothedAverages[i] = count > 0 ? sum / count : 0;
-    }
+    });
     
-    return smoothedAverages;
+    return { p25: p25Array, p75: p75Array, averages: averagesArray };
   }
 
   private addVariabilityStatistics(y: number): void {
     this.doc.setFontSize(11);
     this.doc.setTextColor(0, 0, 0);
     this.doc.text("Analyse de variabilité :", 22, y);
-    
-    // Calculer les statistiques par heure
-    const hourlyStats = this.calculateHourlyStats();
     
     y += 10;
     this.doc.setFontSize(9);
@@ -1076,6 +1154,16 @@ export class NightscoutPdfGenerator {
     this.doc.circle(x + 7, legendY, 1.5, "F");
     this.doc.setFontSize(9);
     this.doc.text("Courbe de glycémie moyenne (5min)", x + 20, legendY + 2);
+    
+    // Zone de variabilité (nouvelle ligne)
+    x = 25;
+    y += 10;
+    this.doc.setFillColor(255, 69, 0, 0.3);
+    this.doc.rect(x, y - 2, 15, 4, "F");
+    this.doc.setDrawColor(255, 69, 0, 0.5);
+    this.doc.setLineWidth(0.3);
+    this.doc.rect(x, y - 2, 15, 4, "S");
+    this.doc.text("Zone de variabilité (25%-75%)", x + 20, y + 2);
     
     // Zone cible (nouvelle ligne)
     x = 25;
