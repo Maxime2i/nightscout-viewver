@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export function Header({ date, setDate }: { date: DateRange | undefined, setDate: (date: DateRange | undefined) => void }) {
+export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | undefined, setDate: (date: DateRange | undefined) => void, onOpenPdfModal: () => void }) {
   const handleCreatePDF = () => {
     if (!date?.from) {
       alert("Merci de sélectionner une plage de dates.");
@@ -72,7 +72,7 @@ export function Header({ date, setDate }: { date: DateRange | undefined, setDate
             />
           </PopoverContent>
         </Popover>
-        <Button onClick={handleCreatePDF} className="h-8 px-4">
+        <Button onClick={onOpenPdfModal} className="h-8 px-4">
           Créer un PDF
         </Button>
         <Button onClick={logout} className="h-8 px-4">

@@ -15,6 +15,9 @@ import { TreatmentChart } from "@/components/dashboard/TreatmentChart";
 import { DailyStats } from "@/components/dashboard/DailyStats";
 import { ShareLinks } from "@/components/dashboard/ShareLinks";
 import { TimeInRange } from "@/components/dashboard/TimeInRange";
+import { FeedbackCard } from "@/components/dashboard/FeedbackCard";
+import { PdfModal } from "@/components/dashboard/PdfModal";
+import jsPDF from "jspdf";
 
 export default function Home() {
   const router = useRouter();
@@ -31,6 +34,8 @@ export default function Home() {
     now.setHours(0, 0, 0, 0);
     return now;
   });
+
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
 
   useEffect(() => {
     const storedUrl = localStorage.getItem("nightscoutUrl");
@@ -53,13 +58,17 @@ export default function Home() {
       const token = localStorage.getItem("nightscoutToken");
 
       const entriesUrl = `${url}/api/v1/entries.json?token=${token}&find[date][$gte]=${from}&find[date][$lte]=${to}&count=10000`;
-      const treatmentsUrl = `${url}/api/v1/treatments.json?token=${token}&find[created_at][$gte]=${new Date(from).toISOString()}&find[created_at][$lte]=${new Date(to).toISOString()}&count=10000`;
+      const treatmentsUrl = `${url}/api/v1/treatments.json?token=${token}&find[created_at][$gte]=${new Date(
+        from
+      ).toISOString()}&find[created_at][$lte]=${new Date(
+        to
+      ).toISOString()}&count=10000`;
       const profilUrl = `${url}/api/v1/profile.json?token=${token}`;
 
       Promise.all([
-        fetch(entriesUrl).then(res => res.json()),
-        fetch(treatmentsUrl).then(res => res.json()),
-        fetch(profilUrl).then(res => res.json())
+        fetch(entriesUrl).then((res) => res.json()),
+        fetch(treatmentsUrl).then((res) => res.json()),
+        fetch(profilUrl).then((res) => res.json()),
       ])
         .then(([entries, treatments, profil]) => {
           setData(entries);
@@ -67,29 +76,325 @@ export default function Home() {
           setProfil(profil);
           setLoading(false);
           console.log("entries", entries);
-          console.log("treatments", treatments);
+          console.log(
+            "treatments",
+            treatments.filter(
+              (t: any) =>
+                t.eventType !== "Meal Bolus" &&
+                t.eventType !== "Temp Basal" &&
+                t.eventType !== "Carb Correction" &&
+                t.eventType !== "Correction Bolus"
+            )
+          );
         })
-        .catch(e => { console.error(e); setLoading(false); });
+        .catch((e) => {
+          console.error(e);
+          setLoading(false);
+        });
     }
   }, [url, date]);
 
   const bolusPoints = treatments
-    .filter(t => t.insulin && t.date)
-    .map(t => ({
+    .filter((t) => t.insulin && t.date)
+    .map((t) => ({
       time: format(new Date(t.date), "HH:mm"),
       date: t.date,
-      insulin: t.insulin
+      insulin: t.insulin,
     }));
 
   const carbsPoints = treatments
-    .filter(t => t.carbs && t.date)
-    .map(t => ({
+    .filter((t) => t.carbs && t.date)
+    .map((t) => ({
       time: format(new Date(t.date), "HH:mm"),
       date: t.date,
-      carbs: t.carbs
+      carbs: t.carbs,
     }));
 
   console.log("profil", profil);
+
+  // Nouvelle fonction avancée pour générer le PDF style Nightscout Reporter
+  const handleGeneratePdf = (infos: {
+    nom: string;
+    prenom: string;
+    dateNaissance: string;
+    insuline: string;
+    diabeteDepuis: string;
+  }) => {
+    const doc = new jsPDF();
+    let y = 18;
+    // Titre principal
+    doc.setFontSize(28);
+    doc.setTextColor(0, 102, 204); // bleu
+    doc.text("Analyse", 12, y);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.text("BG Viewer", 12, y + 6);
+    // Période
+    const from = date?.from ? format(date.from, "dd/MM/yyyy") : "-";
+    const toDate = date?.to ? format(date.to, "dd/MM/yyyy") : "-";
+    doc.text(`${from} jusqu'au ${toDate}`, 198, y + 6, { align: "right" });
+    // Ligne bleue
+    doc.setDrawColor(0, 102, 204);
+    doc.setLineWidth(2);
+    doc.line(12, y + 9, 198, y + 9);
+    y += 22;
+    // Nom centré
+    doc.setFontSize(22);
+    doc.setTextColor(0, 0, 0);
+    doc.text(
+      `${
+        infos.prenom
+          ? infos.prenom.charAt(0).toUpperCase() + infos.prenom.slice(1)
+          : ""
+      } ${infos.nom.toUpperCase()}`,
+      105,
+      y,
+      { align: "center" }
+    );
+    y += 10;
+    // Infos patient
+    doc.setFontSize(12);
+    doc.text("Date de naissance", 40, y);
+    doc.setTextColor(0, 102, 204);
+    doc.text(infos.dateNaissance.split("-").reverse().join(" "), 80, y);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Diabétique depuis", 120, y);
+    doc.setTextColor(0, 102, 204);
+    doc.text(infos.diabeteDepuis.replace("-", " "), 160, y);
+    y += 7;
+    doc.setTextColor(0, 0, 0);
+    doc.text("Insuline", 40, y);
+    doc.setTextColor(0, 102, 204);
+    doc.text(infos.insuline, 80, y);
+    doc.setTextColor(0, 0, 0);
+    // --- Calculs statistiques ---
+    // Jours évalués
+    const uniqueDays = new Set(
+      data.map((e) => format(new Date(e.date), "yyyy-MM-dd"))
+    );
+    const joursEvalues = uniqueDays.size;
+    // Nombre de mesures
+    const nbMesures = data.length;
+    // Changements de réservoir/cathéter/capteur
+    const nbPump = treatments.filter(
+      (t) => t.eventType && t.eventType.toLowerCase().includes("site change")
+    ).length;
+    const nbCapteur = treatments.filter(
+      (t) => t.eventType && t.eventType.toLowerCase().includes("sensor change")
+    ).length;
+    // Valeurs glycémiques
+    const values = data
+      .map((e) => e.sgv || e.glucose)
+      .filter((v) => typeof v === "number");
+    // Nouvelles zones cibles
+    const below70 = values.filter((v) => v < 70);
+    const inRange = values.filter((v) => v >= 70 && v <= 180);
+    const above180 = values.filter((v) => v > 180 && v <= 240);
+    const above240 = values.filter((v) => v > 240);
+    const pctBelow = values.length
+      ? Math.round((below70.length / values.length) * 100)
+      : 0;
+    const pctIn = values.length
+      ? Math.round((inRange.length / values.length) * 100)
+      : 0;
+    const pct180_240 = values.length
+      ? Math.round((above180.length / values.length) * 100)
+      : 0;
+    const pctAbove240 = values.length
+      ? Math.round((above240.length / values.length) * 100)
+      : 0;
+    // Min, max, écart-type
+    const minVal = values.length ? Math.min(...values) : 0;
+    const maxVal = values.length ? Math.max(...values) : 0;
+    const mean = values.length
+      ? values.reduce((a, b) => a + b, 0) / values.length
+      : 0;
+    const std = values.length
+      ? Math.sqrt(
+          values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length
+        )
+      : 0;
+    // GVI (index de variabilité glycémique)
+    const gvi = mean ? (std / mean) * 100 : 0;
+    // PGS (statut glycémique patient)
+    const pgs = mean ? mean + std : 0;
+    // HbA1c estimée
+    const hba1c = mean ? ((mean + 46.7) / 28.7).toFixed(1) : "-";
+    // Moyennes traitements
+    const jours = joursEvalues || 1;
+    const totalGlucides = treatments.reduce(
+      (sum, t) => sum + (t.carbs || 0),
+      0
+    );
+    const totalInsuline = treatments.reduce(
+      (sum, t) => sum + (t.insulin || 0),
+      0
+    );
+    const totalBolus = treatments
+      .filter(
+        (t) =>
+          t.insulin &&
+          t.eventType &&
+          t.eventType.toLowerCase().includes("bolus")
+      )
+      .reduce((sum, t) => sum + (t.insulin || 0), 0);
+    const totalBasal = treatments
+      .filter(
+        (t) =>
+          t.insulin &&
+          t.eventType &&
+          t.eventType.toLowerCase().includes("basal")
+      )
+      .reduce((sum, t) => sum + (t.insulin || 0), 0);
+    // --- Affichage sections ---
+    y += 10;
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Jours évalués`, 20, y);
+    doc.text(`${joursEvalues}`, 60, y);
+    doc.text(`Nombre de mesures de glycémie`, 20, y + 6);
+    doc.text(`${nbMesures}`, 80, y + 6);
+    doc.text(`Nombre de changement de pompes`, 20, y + 12);
+    doc.text(`${nbPump}`, 90, y + 12);
+    doc.text(`Nombre de changements de capteurs`, 20, y + 18);
+    doc.text(`${nbCapteur}`, 90, y + 18);
+    // Séparateur
+    doc.setDrawColor(150);
+    doc.line(15, y + 28, 195, y + 28);
+    // Zone cible
+    y += 36;
+    doc.setFontSize(11);
+    doc.text("Zone cible standard", 20, y);
+    y += 6;
+    doc.setFontSize(10);
+    // Affichage des pourcentages et légende avec couleur
+    // Légende avec carrés colorés
+    let legendY = y;
+
+    // >240 mg/dL (orange)
+    doc.setFillColor(255, 137, 4);
+    doc.rect(22, legendY - 4, 4, 4, "F");
+    doc.text(`>240 mg/dL`, 28, legendY);
+    doc.text(`${pctAbove240} %`, 60, legendY);
+    doc.text(`${above240.length} valeurs`, 80, legendY);
+    legendY += 12;
+
+    // 180–240 mg/dL (jaune)
+    doc.setFillColor(252, 200, 0);
+    doc.rect(22, legendY - 4, 4, 4, "F");
+    doc.text(`180–240 mg/dL`, 28, legendY);
+    doc.text(`${pct180_240} %`, 60, legendY);
+    doc.text(`${above180.length} valeurs`, 80, legendY);
+    legendY += 12;
+
+    // 70–180 mg/dL (vert)
+    doc.setFillColor(124, 207, 0);
+    doc.rect(22, legendY - 4, 4, 4, "F");
+    doc.text(`70–180 mg/dL`, 28, legendY);
+    doc.text(`${pctIn} %`, 60, legendY);
+    doc.text(`${inRange.length} valeurs`, 80, legendY);
+    legendY += 12;
+
+    // <70 mg/dL (rouge)
+    doc.setFillColor(251, 44, 54);
+    doc.rect(22, legendY - 4, 4, 4, "F");
+    doc.text(`<70 mg/dL`, 28, legendY);
+    doc.text(`${pctBelow} %`, 60, legendY);
+    doc.text(`${below70.length} valeurs`, 80, legendY);
+
+    // Barre unique segmentée VERTICALE
+    // Hauteur totale de la barre (en %)
+    const barHeight = 50;
+    const barX = 150;
+    const barY = y - 10; // position verticale de départ
+    let currentY = barY;
+
+
+    // Segment >240 (orange)
+    doc.setFillColor(255, 137, 4);
+    doc.rect(barX, currentY, 8, barHeight * (pctAbove240 / 100), "F");
+    currentY += barHeight * (pctAbove240 / 100);
+
+    // Segment 180-240 (jaune)
+    doc.setFillColor(252, 200, 0);
+    doc.rect(barX, currentY, 8, barHeight * (pct180_240 / 100), "F");
+    currentY += barHeight * (pct180_240 / 100);
+
+    // Segment 70-180 (vert)
+    doc.setFillColor(124, 207, 0);
+    doc.rect(barX, currentY, 8, barHeight * (pctIn / 100), "F");
+    currentY += barHeight * (pctIn / 100);
+
+    // Segment <70 (rouge)
+    doc.setFillColor(251, 44, 54);
+    doc.rect(barX, currentY, 8, barHeight * (pctBelow / 100), "F");
+
+    // Séparateur
+    y = legendY + 12;
+    doc.setDrawColor(150);
+    doc.line(15, y, 195, y);
+    // Période
+    y += 8;
+    doc.setFontSize(11);
+    doc.text("Période", 20, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.text(`Valeur la plus basse de la période`, 22, y);
+    doc.text(`${minVal} mg/dL`, 90, y);
+    y += 6;
+    doc.text(`Valeur la plus élevée de la période`, 22, y);
+    doc.text(`${maxVal} mg/dL`, 90, y);
+    y += 6;
+    doc.text(`Écart-type`, 22, y);
+    doc.text(`${std.toFixed(1)} mg/dL`, 90, y);
+    y += 6;
+    doc.text(`Index de variabilité glycémique (GVI)`, 22, y);
+    doc.text(`${gvi.toFixed(2)}`, 90, y);
+    doc.text(
+      gvi < 1.2
+        ? "excellent"
+        : gvi < 1.5
+        ? "good (1,2 to 1,5)"
+        : "à surveiller",
+      120,
+      y
+    );
+    y += 6;
+    doc.text(`Statut glycémique du patient (PGS)`, 22, y);
+    doc.text(`${pgs.toFixed(2)}`, 90, y);
+    doc.text(pgs < 100 ? "good (35 to 100)" : "à surveiller", 120, y);
+    y += 6;
+    doc.text(`Glycémie moyenne`, 22, y);
+    doc.text(`${mean.toFixed(0)} mg/dL`, 90, y);
+    y += 6;
+    doc.text(`HbA1c estimée`, 22, y);
+    doc.text(`${hba1c} %`, 90, y);
+    // Séparateur
+    y += 8;
+    doc.setDrawColor(150);
+    doc.line(15, y, 195, y);
+    // Traitements
+    y += 8;
+    doc.setFontSize(11);
+    doc.text("Traitements", 20, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.text(`Moyenne de glucides par jour`, 22, y);
+    doc.text(`${(totalGlucides / jours).toFixed(1)} g CH`, 90, y);
+    y += 6;
+    doc.text(`Moyenne d'insuline par jour`, 22, y);
+    doc.text(`${(totalInsuline / jours).toFixed(1)} U`, 90, y);
+    y += 6;
+    doc.text(`Moyenne bolus par jour`, 22, y);
+    doc.text(`${(totalBolus / jours).toFixed(1)} bolus`, 90, y);
+    y += 6;
+    doc.text(`Moyenne basale par jour`, 22, y);
+    doc.text(`${(totalBasal / jours).toFixed(1)} basal`, 90, y);
+    // --- Fin ---
+    // doc.save(`rapport_glycemie_${infos.nom}_${infos.prenom}.pdf`);
+    window.open(doc.output("bloburl"), "_blank");
+    setPdfModalOpen(false);
+  };
 
   if (!url) {
     return (
@@ -101,7 +406,11 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header date={date} setDate={setDate} />
+      <Header
+        date={date}
+        setDate={setDate}
+        onOpenPdfModal={() => setPdfModalOpen(true)}
+      />
       <main className="flex-1 p-4 md:p-8 space-y-6">
         {loading ? (
           <div className="flex items-center justify-center min-h-[200px]">
@@ -113,15 +422,32 @@ export default function Home() {
             <StatsGrid data={data} />
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
-                <GlucoseTrendChart data={data} treatments={treatments} selectedDate={selectedDate} setSelectedDate={setSelectedDate} profil={profil} />
-              
-              
-             
+                <GlucoseTrendChart
+                  data={data}
+                  treatments={treatments}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  profil={profil}
+                />
               </div>
               <div className="space-y-6">
-                <DailyStats data={data} treatments={treatments} selectedDate={selectedDate} />
-                <TimeInRange data={data} treatments={treatments} selectedDate={selectedDate} />
+                <DailyStats
+                  data={data}
+                  treatments={treatments}
+                  selectedDate={selectedDate}
+                />
+                <TimeInRange
+                  data={data}
+                  treatments={treatments}
+                  selectedDate={selectedDate}
+                />
                 <ShareLinks />
+                <FeedbackCard />
+                <PdfModal
+                  open={pdfModalOpen}
+                  onClose={() => setPdfModalOpen(false)}
+                  onGenerate={handleGeneratePdf}
+                />
               </div>
             </div>
           </>

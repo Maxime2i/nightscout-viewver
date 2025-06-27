@@ -171,7 +171,7 @@ export function TimeInRange({
           <div className="flex flex-col justify-between h-48 text-xs py-1 gap-1">
             <span className="text-orange-400 font-bold">Très au-dessus (&gt;240) : {percentAbove240.toFixed(0)}%</span>
             <span className="text-yellow-400 font-bold">Modérément au-dessus (180-240) : {percentAbove180.toFixed(0)}%</span>
-            <span className="text-green-600 font-bold">Dans la cible (70-180) : {percentInRange.toFixed(0)}%</span>
+            <span className="text-green-500 font-bold">Dans la cible (70-180) : {percentInRange.toFixed(0)}%</span>
             <span className="text-red-500 font-bold">Sous la cible (&lt;70) : {percentBelow.toFixed(0)}%</span>
           </div>
         </div>
