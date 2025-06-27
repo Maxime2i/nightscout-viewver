@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/components/I18nProvider";
 import { Analytics } from "@/components/Analytics";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/next"
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -122,6 +124,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </I18nProvider>
         <Analytics />
+        <VercelAnalytics />
       </body>
     </html>
   );
