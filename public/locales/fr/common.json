@@ -1,0 +1,16 @@
+{
+  "loading": "Chargement des données...",
+  "days_evaluated": "Jours évalués",
+  "average_insulin": "Insuline moyenne par jour",
+  "average_bolus": "Bolus moyen par jour", 
+  "average_basal": "Basale moyenne par jour",
+  "average_carbs": "Glucides moyens par jour",
+  "StatsGrid": {
+    "averageGlucose": "Moyenne de glycémie",
+    "timeInRange": "Temps dans la cible",
+    "highestGlucose": "Plus haute (7d)",
+    "lowestGlucose": "Plus basse (7d)",
+    "inRange": "dans la cible",
+    "timeInRangeDescription": "Temps passé entre 70-180 mg/dL"
+  }
+} 

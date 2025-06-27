@@ -1,0 +1,16 @@
+{
+  "loading": "Loading data...",
+  "days_evaluated": "Days evaluated",
+  "average_insulin": "Average insulin per day",
+  "average_bolus": "Average bolus per day",
+  "average_basal": "Average basal per day",
+  "average_carbs": "Average carbs per day",
+  "StatsGrid": {
+    "averageGlucose": "Average glucose",
+    "timeInRange": "Time in range",
+    "highestGlucose": "Highest (7d)",
+    "lowestGlucose": "Lowest (7d)",
+    "inRange": "in range",
+    "timeInRangeDescription": "Time spent between 70-180 mg/dL"
+  }
+} 

@@ -18,9 +18,12 @@ import { TimeInRange } from "@/components/dashboard/TimeInRange";
 import { FeedbackCard } from "@/components/dashboard/FeedbackCard";
 import { PdfModal } from "@/components/dashboard/PdfModal";
 import jsPDF from "jspdf";
+import { useTranslation } from 'react-i18next';
+import '../i18n';
 
 export default function Home() {
   const router = useRouter();
+  const { t } = useTranslation('common');
   const [url, setUrl] = useState<string | null>(null);
   const [date, setDate] = useState<DateRange | undefined>(() => {
     const to = new Date();
@@ -496,7 +499,7 @@ export default function Home() {
   if (!url) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Redirection vers la page de connexion...</p>
+        <p>{t('loading')}</p>
       </div>
     );
   }
@@ -512,7 +515,7 @@ export default function Home() {
         {loading ? (
           <div className="flex items-center justify-center min-h-[200px]">
             <span className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-2"></span>
-            <span>Chargement des données...</span>
+            <span>{t('loading')}</span>
           </div>
         ) : (
           <>

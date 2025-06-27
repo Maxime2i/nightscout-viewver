@@ -9,18 +9,10 @@ import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import i18n from "../../i18n";
 
 export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | undefined, setDate: (date: DateRange | undefined) => void, onOpenPdfModal: () => void }) {
-  const handleCreatePDF = () => {
-    if (!date?.from) {
-      alert("Merci de sélectionner une plage de dates.");
-      return;
-    }
-    const from = format(date.from, "yyyy-MM-dd");
-    const to = date.to ? format(date.to, "yyyy-MM-dd") : from;
-    alert(`Créer un PDF du ${from} au ${to}`);
-  };
-
   const router = useRouter();
   const logout = () => {
     localStorage.removeItem("nightscoutUrl");
@@ -28,9 +20,27 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
     router.push("/login");
   };
 
+  // Sélecteur de langue
+  const [lang, setLang] = useState(i18n.language || "fr");
+  const handleLangChange = (value: string) => {
+    setLang(value);
+    i18n.changeLanguage(value);
+  };
+
   return (
     <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-950 border-b">
+      <div className="flex items-center gap-4">
         <h1 className="text-xl font-bold">DiabExplorer</h1>
+        <Select value={lang} onValueChange={handleLangChange}>
+          <SelectTrigger className="w-24 h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="fr">Fr</SelectItem>
+            <SelectItem value="en">En</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       <div className="flex items-center gap-4">
         <Popover>
           <PopoverTrigger asChild>

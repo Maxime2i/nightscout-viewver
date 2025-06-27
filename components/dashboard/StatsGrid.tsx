@@ -1,8 +1,12 @@
 import { StatCard } from "./StatCard";
 import { ArrowDownUp, ArrowUpRight, ArrowDownRight, Target, Clock } from "lucide-react";
+import { useTranslation } from 'react-i18next';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export function StatsGrid({ data }: { data: any[] }) {
-  console.log("data", data);
+  const { t } = useTranslation('common');
+
   const averageGlucose = data.reduce((acc, entry) => acc + entry.sgv, 0) / data.length;
   const highestGlucose = data.reduce((acc, entry) => Math.max(acc, entry.sgv), 0);
   const lowestGlucose = data.reduce((acc, entry) => Math.min(acc, entry.sgv), 1000);
@@ -14,33 +18,39 @@ export function StatsGrid({ data }: { data: any[] }) {
   }, 0);
   const timeInRangePercentage = (timeInRange / data.length) * 100;
 
+  // Trouver la date de la plus haute et la plus basse glycémie
+  const highestEntry = data.reduce((max, entry) => (entry.sgv > (max?.sgv ?? -Infinity) ? entry : max), null);
+  const lowestEntry = data.reduce((min, entry) => (entry.sgv < (min?.sgv ?? Infinity) ? entry : min), null);
+  const highestDate = highestEntry && highestEntry.date ? format(new Date(highestEntry.date), "dd/MM/yyyy HH:mm", { locale: fr }) : "-";
+  const lowestDate = lowestEntry && lowestEntry.date ? format(new Date(lowestEntry.date), "dd/MM/yyyy HH:mm", { locale: fr }) : "-";
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
-        title="Average Glucose"
+        title={t('StatsGrid.averageGlucose')}
         value={averageGlucose.toFixed(0) + " mg/dL"}
-        description={`${timeInRangePercentage.toFixed(0)}% in range`}
+        description={`${timeInRangePercentage.toFixed(0)}% ${t('StatsGrid.inRange')}`}
         icon={<Target className="h-4 w-4 text-muted-foreground" />}
         color="bg-blue-50"
       />
       <StatCard
-        title="Time in Range"
+        title={t('StatsGrid.timeInRange')}
         value={timeInRangePercentage.toFixed(0) + "%"}
-        description="70-180 mg/dL target"
+        description={t('StatsGrid.timeInRangeDescription')}
         icon={<Clock className="h-4 w-4 text-muted-foreground" />}
         color="bg-green-50"
       />
       <StatCard
-        title="Highest (7d)"
+        title={t('StatsGrid.highestGlucose')}
         value={highestGlucose.toFixed(0) + " mg/dL"}
-        description="Yesterday, 3:45 PM"
+        description={`${highestDate}`}
         icon={<ArrowUpRight className="h-4 w-4 text-muted-foreground" />}
         color="bg-red-50"
       />
       <StatCard
-        title="Lowest (7d)"
+        title={t('StatsGrid.lowestGlucose')}
         value={lowestGlucose.toFixed(0) + " mg/dL"}
-        description="3 days ago, 11:20 PM"
+        description={`${lowestDate}`}
         icon={<ArrowDownRight className="h-4 w-4 text-muted-foreground" />}
         color="bg-yellow-50"
       />
