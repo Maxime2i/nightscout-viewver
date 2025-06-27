@@ -47,6 +47,8 @@
     "birthDate": "Birth Date",
     "insulin": "Insulin",
     "diabeticSince": "Diabetic Since",
+    "includeCharts": "Include daily charts",
+    "includeVariabilityChart": "Include variability chart",
     "cancel": "Cancel",
     "generatePdf": "Generate PDF"
   },

@@ -10,6 +10,7 @@ interface PatientInfo {
   insuline: string;
   diabeteDepuis: string;
   includeCharts: boolean;
+  includeVariabilityChart: boolean;
 }
 
 interface PdfGenerationData {
@@ -790,6 +791,313 @@ export class NightscoutPdfGenerator {
     this.doc.text("Cibles (70-180 mg/dL)", x + 20, legendY2 + 2);
   }
 
+  private addVariabilityChart(): void {
+    // Ajouter une nouvelle page
+    this.doc.addPage();
+    
+    let y = 20;
+    
+    // Titre de la page
+    this.doc.setFontSize(18);
+    this.doc.setTextColor(0, 102, 204); // bleu
+    this.doc.text("Profil de variabilité glycémique", 20, y);
+    
+    // Informations sur la période
+    const from = this.date?.from ? format(this.date.from, "dd/MM/yyyy") : "-";
+    const toDate = this.date?.to ? format(this.date.to, "dd/MM/yyyy") : "-";
+    this.doc.setFontSize(10);
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text(`Période : ${from} au ${toDate}`, 20, y + 15);
+    
+    y += 35;
+    
+    // Zone du graphique - même taille que les graphiques quotidiens
+    const chartX = 20;
+    const chartY = y;
+    const chartWidth = 170;
+    const chartHeight = 140;
+    
+    // Dessiner le cadre du graphique
+    this.doc.setDrawColor(200);
+    this.doc.setLineWidth(0.5);
+    this.doc.rect(chartX, chartY, chartWidth, chartHeight);
+    
+    // Grille horizontale (mg/dL)
+    const minY = 40;
+    const maxY = 300;
+    const yTicks = [40, 80, 120, 160, 200, 240, 280, 300];
+    
+    this.doc.setDrawColor(240, 240, 240);
+    this.doc.setLineWidth(0.3);
+    
+    for (const val of yTicks) {
+      const yPos = chartY + chartHeight - ((val - minY) / (maxY - minY)) * chartHeight;
+      this.doc.line(chartX, yPos, chartX + chartWidth, yPos);
+      
+      // Labels des valeurs
+      this.doc.setFontSize(8);
+      this.doc.setTextColor(120, 120, 120);
+      this.doc.text(`${val}`, chartX - 15, yPos + 2);
+    }
+    
+    // Grille verticale (heures) - toutes les 2 heures
+    const hourTicks = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24];
+    for (const h of hourTicks) {
+      const x = chartX + (h / 24) * chartWidth;
+      this.doc.line(x, chartY, x, chartY + chartHeight);
+      
+      // Labels des heures
+      this.doc.setFontSize(8);
+      this.doc.setTextColor(120, 120, 120);
+      this.doc.text(`${h.toString().padStart(2, '0')}:00`, x - 8, chartY + chartHeight + 8);
+    }
+    
+    // Lignes de référence (70 et 180 mg/dL)
+    const ref70Y = chartY + chartHeight - ((70 - minY) / (maxY - minY)) * chartHeight;
+    const ref180Y = chartY + chartHeight - ((180 - minY) / (maxY - minY)) * chartHeight;
+    
+    this.doc.setDrawColor(255, 0, 0);
+    this.doc.setLineWidth(1);
+    this.doc.setLineDashPattern([3, 3], 0);
+    // this.doc.line(chartX, ref70Y, chartX + chartWidth, ref70Y);
+    // this.doc.line(chartX, ref180Y, chartX + chartWidth, ref180Y);
+    this.doc.setLineDashPattern([], 0); // Reset dash pattern
+    
+    // Zone cible (70-180 mg/dL) en vert très clair
+    this.doc.setFillColor(144, 238, 144); // Vert clair avec transparence
+    this.doc.rect(chartX, ref180Y, chartWidth, ref70Y - ref180Y, "F");
+    
+    // Dessiner la courbe des moyennes de glycémie par heure
+    this.drawGlucoseAverageCurve(chartX, chartY, chartWidth, chartHeight, minY, maxY);
+    
+    y = chartY + chartHeight + 20;
+    
+    // Statistiques de variabilité
+    this.addVariabilityStatistics(y);
+    
+    // Légende
+    this.addVariabilityLegend(y + 60);
+    
+    // Labels des axes
+    this.doc.setFontSize(10);
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text("mg/dL", 5, chartY + chartHeight / 2, { angle: 90 });
+    this.doc.text("Heure de la journée", chartX + chartWidth / 2 - 25, chartY + chartHeight + 20);
+  }
+
+  private drawGlucoseAverageCurve(chartX: number, chartY: number, chartWidth: number, chartHeight: number, minY: number, maxY: number): void {
+    // Calculer les moyennes de glycémie par intervalles de 5 minutes
+    const minuteGlucoseAverages = this.calculateMinuteGlucoseAverages();
+    
+    // Points pour dessiner la courbe
+    const points: { x: number, y: number }[] = [];
+    
+    // Calculer les coordonnées de chaque point (par intervalles de 5 minutes)
+    for (let interval = 0; interval < 288; interval++) { // 24h * 60min / 5min = 288 intervalles
+      const avgGlucose = minuteGlucoseAverages[interval];
+      if (avgGlucose > 0) { // Seulement si on a des données pour cet intervalle
+        const timeRatio = interval / 288; // Ratio par rapport à 24h
+        const x = chartX + timeRatio * chartWidth;
+        const y = chartY + chartHeight - ((avgGlucose - minY) / (maxY - minY)) * chartHeight;
+        points.push({ x, y });
+      }
+    }
+    
+    // Dessiner la courbe si on a au moins 2 points
+    if (points.length >= 2) {
+      this.doc.setDrawColor(255, 69, 0); // Rouge-orangé pour la courbe de glycémie
+      this.doc.setLineWidth(0.5);
+      
+      // Dessiner les segments de la courbe
+      for (let i = 0; i < points.length - 1; i++) {
+        this.doc.line(points[i].x, points[i].y, points[i + 1].x, points[i + 1].y);
+      }
+      
+      // Dessiner des petits cercles aux points de données
+      this.doc.setFillColor(255, 69, 0);
+      points.forEach(point => {
+        this.doc.circle(point.x, point.y, 0.5, "F");
+      });
+    }
+  }
+
+  private calculateMinuteGlucoseAverages(): number[] {
+    // 288 intervalles de 5 minutes (24h * 60min / 5min = 288)
+    const intervalData = new Array(288).fill(0).map(() => ({ total: 0, count: 0 }));
+    
+    // Grouper les données de glycémie par intervalles de 5 minutes
+    this.data.forEach(entry => {
+      const entryDate = new Date(entry.date);
+      const totalMinutes = entryDate.getHours() * 60 + entryDate.getMinutes();
+      const intervalIndex = Math.floor(totalMinutes / 5); // Intervalle de 5 minutes
+      
+      if (entry.sgv && entry.sgv > 0 && intervalIndex < 288) {
+        intervalData[intervalIndex].total += entry.sgv;
+        intervalData[intervalIndex].count++;
+      }
+    });
+    
+    // Calculer les moyennes et lisser avec une moyenne mobile
+    const averages = intervalData.map(data => data.count > 0 ? data.total / data.count : 0);
+    
+    // Appliquer un lissage avec une moyenne mobile sur 3 points pour une courbe plus fluide
+    const smoothedAverages = new Array(288).fill(0);
+    for (let i = 0; i < 288; i++) {
+      let sum = 0;
+      let count = 0;
+      
+      // Moyenne des 3 points (précédent, actuel, suivant)
+      for (let j = Math.max(0, i - 1); j <= Math.min(287, i + 1); j++) {
+        if (averages[j] > 0) {
+          sum += averages[j];
+          count++;
+        }
+      }
+      
+      smoothedAverages[i] = count > 0 ? sum / count : 0;
+    }
+    
+    return smoothedAverages;
+  }
+
+  private addVariabilityStatistics(y: number): void {
+    this.doc.setFontSize(11);
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text("Analyse de variabilité :", 22, y);
+    
+    // Calculer les statistiques par heure
+    const hourlyStats = this.calculateHourlyStats();
+    
+    y += 10;
+    this.doc.setFontSize(9);
+    
+    // Heure avec le plus d'activité
+    const mostActiveHour = this.findMostActiveHour();
+    this.doc.text(`• Heure la plus active : ${mostActiveHour.hour}h00 (${mostActiveHour.count} traitements)`, 25, y);
+    y += 6;
+    
+    // Moyenne d'insuline par jour
+    const avgInsulinPerDay = this.calculateAverageInsulinPerDay();
+    this.doc.text(`• Insuline moyenne par jour : ${avgInsulinPerDay.toFixed(1)}U`, 25, y);
+    y += 6;
+    
+    // Moyenne de glucides par jour
+    const avgCarbsPerDay = this.calculateAverageCarbsPerDay();
+    this.doc.text(`• Glucides moyens par jour : ${avgCarbsPerDay.toFixed(0)}g`, 25, y);
+    y += 6;
+    
+    // Période la plus chargée
+    const busiestPeriod = this.findBusiestPeriod();
+    this.doc.text(`• Période la plus chargée : ${busiestPeriod.start}h-${busiestPeriod.end}h`, 25, y);
+  }
+
+  private calculateHourlyStats() {
+    const hourlyData = new Array(24).fill(0).map(() => ({ treatments: 0, insulin: 0, carbs: 0 }));
+    
+    this.treatments.forEach(treatment => {
+      const treatmentDate = new Date(treatment.date || treatment.timestamp || '');
+      const hour = treatmentDate.getHours();
+      
+      hourlyData[hour].treatments++;
+      if (treatment.insulin) hourlyData[hour].insulin += treatment.insulin;
+      if (treatment.carbs) hourlyData[hour].carbs += treatment.carbs;
+    });
+    
+    return hourlyData;
+  }
+
+  private findMostActiveHour() {
+    const hourlyStats = this.calculateHourlyStats();
+    let maxCount = 0;
+    let maxHour = 0;
+    
+    hourlyStats.forEach((stats, hour) => {
+      if (stats.treatments > maxCount) {
+        maxCount = stats.treatments;
+        maxHour = hour;
+      }
+    });
+    
+    return { hour: maxHour, count: maxCount };
+  }
+
+  private calculateAverageInsulinPerDay(): number {
+    if (!this.date?.from || !this.date?.to) return 0;
+    
+    const totalInsulin = this.treatments.reduce((sum, t) => sum + (t.insulin || 0), 0);
+    const daysDiff = Math.ceil((this.date.to.getTime() - this.date.from.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    return totalInsulin / daysDiff;
+  }
+
+  private calculateAverageCarbsPerDay(): number {
+    if (!this.date?.from || !this.date?.to) return 0;
+    
+    const totalCarbs = this.treatments.reduce((sum, t) => sum + (t.carbs || 0), 0);
+    const daysDiff = Math.ceil((this.date.to.getTime() - this.date.from.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    return totalCarbs / daysDiff;
+  }
+
+  private findBusiestPeriod() {
+    const hourlyStats = this.calculateHourlyStats();
+    let maxSum = 0;
+    let bestStart = 0;
+    
+    // Chercher la période de 4h consécutives avec le plus de traitements
+    for (let start = 0; start < 20; start++) {
+      let sum = 0;
+      for (let i = 0; i < 4; i++) {
+        sum += hourlyStats[start + i].treatments;
+      }
+      if (sum > maxSum) {
+        maxSum = sum;
+        bestStart = start;
+      }
+    }
+    
+    return { start: bestStart, end: bestStart + 4 };
+  }
+
+  private addVariabilityLegend(y: number): void {
+    this.doc.setFontSize(10);
+    this.doc.setTextColor(0, 0, 0);
+    this.doc.text("Légende :", 22, y);
+    
+    y += 8;
+    const legendY = y;
+    let x = 25;
+    
+    // Courbe de glycémie moyenne
+    this.doc.setDrawColor(255, 69, 0);
+    this.doc.setLineWidth(2);
+    this.doc.line(x, legendY, x + 15, legendY);
+    this.doc.setFillColor(255, 69, 0);
+    this.doc.circle(x + 7, legendY, 1.5, "F");
+    this.doc.setFontSize(9);
+    this.doc.text("Courbe de glycémie moyenne (5min)", x + 20, legendY + 2);
+    
+    // Zone cible (nouvelle ligne)
+    x = 25;
+    y += 10;
+    this.doc.setFillColor(144, 238, 144);
+    this.doc.rect(x, y - 2, 15, 4, "F");
+    this.doc.setDrawColor(100, 100, 100);
+    this.doc.setLineWidth(0.5);
+    this.doc.rect(x, y - 2, 15, 4, "S");
+    this.doc.text("Zone cible (70-180 mg/dL)", x + 20, y + 2);
+    
+    // Lignes de référence (nouvelle ligne)
+    x = 25;
+    y += 10;
+    this.doc.setDrawColor(255, 0, 0);
+    this.doc.setLineWidth(1);
+    this.doc.setLineDashPattern([3, 3], 0);
+    this.doc.line(x, y, x + 15, y);
+    this.doc.setLineDashPattern([], 0);
+    this.doc.text("Limites cibles (70 et 180 mg/dL)", x + 20, y + 2);
+  }
+
   public generate(infos: PatientInfo): void {
     const stats = this.calculateStatistics();
     
@@ -803,6 +1111,11 @@ export class NightscoutPdfGenerator {
     // Ajouter les graphiques quotidiens uniquement si l'option est activée
     if (infos.includeCharts) {
       this.addGlucoseTrendPage();
+    }
+    
+    // Ajouter le graphique de variabilité si l'option est activée
+    if (infos.includeVariabilityChart) {
+      this.addVariabilityChart();
     }
     
     // Ouvrir le PDF dans un nouvel onglet

@@ -48,6 +48,7 @@
     "insulin": "Insuline",
     "diabeticSince": "Diabétique depuis",
     "includeCharts": "Inclure les graphiques quotidiens",
+    "includeVariabilityChart": "Inclure le graphique de variabilité",
     "cancel": "Annuler",
     "generatePdf": "Générer le PDF"
   },

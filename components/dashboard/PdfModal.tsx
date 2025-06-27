@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useTranslation } from 'react-i18next';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface PdfModalProps {
   open: boolean;
   onClose: () => void;
-  onGenerate: (infos: { nom: string; prenom: string; dateNaissance: string; insuline: string; diabeteDepuis: string; includeCharts: boolean }) => void;
+  onGenerate: (infos: { nom: string; prenom: string; dateNaissance: string; insuline: string; diabeteDepuis: string; includeCharts: boolean; includeVariabilityChart: boolean }) => void;
 }
 
 export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate }) => {
@@ -15,6 +17,7 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
   const [insuline, setInsuline] = useState("");
   const [diabeteDepuis, setDiabeteDepuis] = useState("");
   const [includeCharts, setIncludeCharts] = useState(true); // Activé par défaut
+  const [includeVariabilityChart, setIncludeVariabilityChart] = useState(true); // Activé par défaut
 
   // Pré-remplissage depuis le localStorage à l'ouverture
   React.useEffect(() => {
@@ -29,6 +32,7 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
           setInsuline(infos.insuline || "");
           setDiabeteDepuis(infos.diabeteDepuis || "");
           setIncludeCharts(infos.includeCharts !== undefined ? infos.includeCharts : true);
+          setIncludeVariabilityChart(infos.includeVariabilityChart !== undefined ? infos.includeVariabilityChart : true);
         } catch {}
       }
     }
@@ -38,7 +42,7 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+      <Card className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
         <h2 className="text-xl font-bold mb-4">{t('PdfModal.title')}</h2>
         <form
           onSubmit={e => {
@@ -46,9 +50,9 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
             // Sauvegarde dans le localStorage
             localStorage.setItem(
               "pdfInfos",
-              JSON.stringify({ nom, prenom, dateNaissance, insuline, diabeteDepuis, includeCharts })
+              JSON.stringify({ nom, prenom, dateNaissance, insuline, diabeteDepuis, includeCharts, includeVariabilityChart })
             );
-            onGenerate({ nom, prenom, dateNaissance, insuline, diabeteDepuis, includeCharts });
+            onGenerate({ nom, prenom, dateNaissance, insuline, diabeteDepuis, includeCharts, includeVariabilityChart });
           }}
           className="space-y-4"
         >
@@ -84,12 +88,24 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
               {t('PdfModal.includeCharts')}
             </label>
           </div>
+          <div className="flex items-center space-x-2">
+            <input 
+              type="checkbox" 
+              id="includeVariabilityChart" 
+              checked={includeVariabilityChart} 
+              onChange={e => setIncludeVariabilityChart(e.target.checked)}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="includeVariabilityChart" className="text-sm font-medium">
+              {t('PdfModal.includeVariabilityChart')}
+            </label>
+          </div>
           <div className="flex justify-end space-x-2 pt-2">
-            <button type="button" className="px-4 py-2 bg-gray-300 rounded" onClick={onClose}>{t('PdfModal.cancel')}</button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">{t('PdfModal.generatePdf')}</button>
+            <Button variant="outline" type="button" className="px-4 py-2 bg-gray-300 rounded" onClick={onClose}>{t('PdfModal.cancel')}</Button>
+            <Button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">{t('PdfModal.generatePdf')}</Button>
           </div>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }; 

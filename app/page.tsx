@@ -102,6 +102,7 @@ export default function Home() {
     insuline: string;
     diabeteDepuis: string;
     includeCharts: boolean;
+    includeVariabilityChart: boolean;
   }) => {
     generateNightscoutPdf(
       {
