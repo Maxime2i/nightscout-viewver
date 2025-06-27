@@ -16,7 +16,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 export default function LoginPage() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const [url, setUrl] = useState("");
   const [token, setToken] = useState("");
   const router = useRouter();
@@ -74,8 +74,8 @@ export default function LoginPage() {
               </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full">
+          <CardFooter className="pt-4">
+            <Button type="submit" className="w-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
               {t('LoginPage.login')}
             </Button>
           </CardFooter>

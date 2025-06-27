@@ -142,7 +142,7 @@
     "title": "Connexion",
     "description": "Veuillez entrer l'URL de votre site Nightscout.",
     "nightscoutUrl": "URL Nightscout",
-    "urlPlaceholder": "https://votre-site.herokuapp.com",
+    "urlPlaceholder": "https://votre-site.nightscoutpro.com",
     "token": "Token (optionnel)",
     "tokenPlaceholder": "Votre token Nightscout (si protégé)",
     "login": "Se connecter"
