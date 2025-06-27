@@ -13,8 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTranslation } from 'react-i18next';
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const [url, setUrl] = useState("");
   const [token, setToken] = useState("");
   const router = useRouter();
@@ -43,29 +45,29 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Connexion</CardTitle>
+          <CardTitle>{t('LoginPage.title')}</CardTitle>
           <CardDescription>
-            Veuillez entrer l'URL de votre site Nightscout.
+            {t('LoginPage.description')}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent>
             <div className="grid w-full items-center gap-4">
               <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="url">URL Nightscout</Label>
+                <Label htmlFor="url">{t('LoginPage.nightscoutUrl')}</Label>
                 <Input
                   id="url"
-                  placeholder="https://votre-site.herokuapp.com"
+                  placeholder={t('LoginPage.urlPlaceholder')}
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
                   required
                 />
               </div>
               <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="token">Token (optionnel)</Label>
+                <Label htmlFor="token">{t('LoginPage.token')}</Label>
                 <Input
                   id="token"
-                  placeholder="Votre token Nightscout (si protégé)"
+                  placeholder={t('LoginPage.tokenPlaceholder')}
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
                 />
@@ -74,7 +76,7 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full">
-              Se connecter
+              {t('LoginPage.login')}
             </Button>
           </CardFooter>
         </form>

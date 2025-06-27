@@ -20,8 +20,10 @@ import {
 } from "@/components/ui/select";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { DateRange } from "react-day-picker";
+import { useTranslation } from 'react-i18next';
 
 export function DataManagement() {
+  const { t } = useTranslation('common');
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: new Date(2025, 5, 18),
     to: new Date(2025, 5, 25),
@@ -30,7 +32,7 @@ export function DataManagement() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Data Management</CardTitle>
+        <CardTitle>{t('DataManagement.title')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -55,7 +57,7 @@ export function DataManagement() {
                     format(date.from, "LLL dd, y")
                   )
                 ) : (
-                  <span>Pick a date</span>
+                  <span>{t('DataManagement.pickDate')}</span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -72,31 +74,31 @@ export function DataManagement() {
           </Popover>
           <Select>
             <SelectTrigger>
-              <SelectValue placeholder="Event Type" />
+              <SelectValue placeholder={t('DataManagement.eventType')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Events</SelectItem>
-              <SelectItem value="glucose">Glucose Readings</SelectItem>
-              <SelectItem value="insulin">Insulin Doses</SelectItem>
-              <SelectItem value="notes">Notes</SelectItem>
+              <SelectItem value="all">{t('DataManagement.allEvents')}</SelectItem>
+              <SelectItem value="glucose">{t('DataManagement.glucoseReadings')}</SelectItem>
+              <SelectItem value="insulin">{t('DataManagement.insulinDoses')}</SelectItem>
+              <SelectItem value="notes">{t('DataManagement.notes')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Button className="w-full gap-2 md:col-span-1">
-            <Filter className="h-4 w-4" /> Apply Filters
+            <Filter className="h-4 w-4" /> {t('DataManagement.applyFilters')}
           </Button>
           <Select defaultValue="period">
             <SelectTrigger className="w-full md:col-span-1">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="period">Export Period</SelectItem>
-              <SelectItem value="all">Export All Data</SelectItem>
+              <SelectItem value="period">{t('DataManagement.exportPeriod')}</SelectItem>
+              <SelectItem value="all">{t('DataManagement.exportAllData')}</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" className="w-full gap-2 md:col-span-1">
-            <Download className="h-4 w-4" /> Export PDF
+            <Download className="h-4 w-4" /> {t('DataManagement.exportPdf')}
           </Button>
         </div>
       </CardContent>

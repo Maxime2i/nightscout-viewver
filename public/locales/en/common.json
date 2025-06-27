@@ -12,5 +12,132 @@
     "lowestGlucose": "Lowest (7d)",
     "inRange": "in range",
     "timeInRangeDescription": "Time spent between 70-180 mg/dL"
+  },
+  "QuickActions": {
+    "title": "Quick Actions",
+    "addGlucoseReading": "Add Glucose Reading",
+    "logInsulinDose": "Log Insulin Dose",
+    "addNote": "Add Note"
+  },
+  "DataManagement": {
+    "title": "Data Management",
+    "pickDate": "Pick a date",
+    "eventType": "Event Type",
+    "allEvents": "All Events",
+    "glucoseReadings": "Glucose Readings",
+    "insulinDoses": "Insulin Doses",
+    "notes": "Notes",
+    "applyFilters": "Apply Filters",
+    "exportPeriod": "Export Period",
+    "exportAllData": "Export All Data",
+    "exportPdf": "Export PDF"
+  },
+  "FeedbackCard": {
+    "title": "Give Feedback",
+    "placeholder": "Your message...",
+    "successMessage": "Thank you for your feedback!",
+    "errorMessage": "Error sending feedback. Please try again later.",
+    "sending": "Sending...",
+    "send": "Send"
+  },
+  "PdfModal": {
+    "title": "PDF Information",
+    "lastName": "Last Name",
+    "firstName": "First Name",
+    "birthDate": "Birth Date",
+    "insulin": "Insulin",
+    "diabeticSince": "Diabetic Since",
+    "cancel": "Cancel",
+    "generatePdf": "Generate PDF"
+  },
+  "Header": {
+    "title": "DiabExplorer",
+    "selectDateRange": "Select a date range",
+    "createPdf": "Create PDF"
+  },
+  "GlucoseTrendChart": {
+    "title": "Glucose Trend",
+    "description": "Track your glucose throughout the day",
+    "glucose": "Glucose",
+    "mealBolus": "Meal Bolus",
+    "correctionBolus": "Correction Bolus",
+    "carbs": "Carbs",
+    "scheduledBasal": "Scheduled Basal",
+    "tempBasal": "Temp Basal",
+    "start": "Start",
+    "end": "End",
+    "rate": "Rate"
+  },
+  "PdfGeneration": {
+    "analysis": "Analysis",
+    "untilDate": "until",
+    "birthDate": "Birth Date",
+    "diabeticSince": "Diabetic Since",
+    "insulin": "Insulin",
+    "daysEvaluated": "Days evaluated",
+    "numberOfGlucoseMeasurements": "Number of glucose measurements",
+    "numberOfPumpChanges": "Number of pump changes",
+    "numberOfSensorChanges": "Number of sensor changes",
+    "standardTargetZone": "Standard target zone",
+    "period": "Period",
+    "lowestValuePeriod": "Lowest value in period",
+    "highestValuePeriod": "Highest value in period",
+    "standardDeviation": "Standard deviation",
+    "averageGlucose": "Average glucose",
+    "estimatedHbA1c": "Estimated HbA1c",
+    "treatments": "Treatments",
+    "averageCarbsPerDay": "Average carbs per day",
+    "averageInsulinPerDay": "Average insulin per day",
+    "averageBolusPerDay": "Average bolus per day",
+    "averageBasalPerDay": "Average basal per day",
+    "gvi": "Glucose Variability Index (GVI)",
+    "pgs": "Patient Glucose Status (PGS)",
+    "excellentControl": "Excellent control",
+    "goodControl": "Good control",
+    "mediumControl": "Medium (watch out)",
+    "poorControl": "Poor control",
+    "values": "values",
+    "gOfCarbs": "g of carbs",
+    "units": "U"
+  },
+  "DailyStats": {
+    "title": "Statistics of",
+    "carbsIngested": "Carbs ingested",
+    "insulinBolus": "Insulin bolus (meal + correction)",
+    "insulinBasal": "Insulin basal (temp basal)",
+    "percentageInTarget": "Percentage of glucose in target range (70-180 mg/dL)"
+  },
+  "RecentAlerts": {
+    "title": "Recent Alerts",
+    "highGlucose": "High Glucose",
+    "trendingHigh": "Trending High",
+    "risingFor": "Rising for 45 minutes"
+  },
+  "ShareLinks": {
+    "title": "Share your dashboard",
+    "copyLink": "Copy link"
+  },
+  "TimeInRange": {
+    "title": "Time in Range",
+    "selectPeriod": "Select a period:",
+    "1day": "1 day",
+    "2days": "2 days",
+    "1week": "1 week", 
+    "2weeks": "2 weeks",
+    "1month": "1 month",
+    "2months": "2 months",
+    "veryAbove": "Very above (>240)",
+    "moderatelyAbove": "Moderately above (180-240)",
+    "inTarget": "In target (70-180)",
+    "belowTarget": "Below target (<70)"
+  },
+  "LoginPage": {
+    "title": "Login",
+    "description": "Please enter your Nightscout site URL.",
+    "nightscoutUrl": "Nightscout URL",
+    "urlPlaceholder": "https://your-site.herokuapp.com",
+    "token": "Token (optional)",
+    "tokenPlaceholder": "Your Nightscout token (if protected)",
+    "login": "Login"
   }
 } 

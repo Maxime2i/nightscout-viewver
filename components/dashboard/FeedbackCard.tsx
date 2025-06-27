@@ -3,8 +3,10 @@ import emailjs from "@emailjs/browser";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from 'react-i18next';
 
 export const FeedbackCard = () => {
+  const { t } = useTranslation('common');
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -30,7 +32,7 @@ export const FeedbackCard = () => {
       setSent(true);
       setMessage("");
     } catch (err) {
-      setError("Erreur lors de l'envoi du feedback. Réessaie plus tard.");
+      setError(t('FeedbackCard.errorMessage'));
       console.error(err);
     } finally {
       setSending(false);
@@ -40,23 +42,23 @@ export const FeedbackCard = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Donner un feedback</CardTitle>
+        <CardTitle>{t('FeedbackCard.title')}</CardTitle>
       </CardHeader>
       <form onSubmit={handleSend}>
         <CardContent className="space-y-4">
           <Textarea
-            placeholder="Votre message..."
+            placeholder={t('FeedbackCard.placeholder')}
             value={message}
             onChange={e => setMessage(e.target.value)}
             required
             className="resize-none"
           />
-          {sent && <p className="text-green-600 text-sm">Merci pour votre feedback !</p>}
+          {sent && <p className="text-green-600 text-sm">{t('FeedbackCard.successMessage')}</p>}
           {error && <p className="text-red-600 text-sm">{error}</p>}
         </CardContent>
         <CardFooter className="flex justify-end pt-4">
           <Button type="submit" disabled={sending || !message.trim()} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
-            {sending ? "Envoi..." : "Envoyer"}
+            {sending ? t('FeedbackCard.sending') : t('FeedbackCard.send')}
           </Button>
         </CardFooter>
       </form>

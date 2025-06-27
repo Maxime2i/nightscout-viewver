@@ -12,5 +12,132 @@
     "lowestGlucose": "Plus basse (7d)",
     "inRange": "dans la cible",
     "timeInRangeDescription": "Temps passé entre 70-180 mg/dL"
+  },
+  "QuickActions": {
+    "title": "Actions Rapides",
+    "addGlucoseReading": "Ajouter une glycémie",
+    "logInsulinDose": "Enregistrer une dose d'insuline",
+    "addNote": "Ajouter une note"
+  },
+  "DataManagement": {
+    "title": "Gestion des Données",
+    "pickDate": "Sélectionner une date",
+    "eventType": "Type d'événement",
+    "allEvents": "Tous les événements",
+    "glucoseReadings": "Lectures de glycémie",
+    "insulinDoses": "Doses d'insuline",
+    "notes": "Notes",
+    "applyFilters": "Appliquer les filtres",
+    "exportPeriod": "Exporter la période",
+    "exportAllData": "Exporter toutes les données",
+    "exportPdf": "Exporter PDF"
+  },
+  "FeedbackCard": {
+    "title": "Donner un feedback",
+    "placeholder": "Votre message...",
+    "successMessage": "Merci pour votre feedback !",
+    "errorMessage": "Erreur lors de l'envoi du feedback. Réessaie plus tard.",
+    "sending": "Envoi...",
+    "send": "Envoyer"
+  },
+  "PdfModal": {
+    "title": "Informations pour le PDF",
+    "lastName": "Nom",
+    "firstName": "Prénom",
+    "birthDate": "Date de naissance",
+    "insulin": "Insuline",
+    "diabeticSince": "Diabétique depuis",
+    "cancel": "Annuler",
+    "generatePdf": "Générer le PDF"
+  },
+  "Header": {
+    "title": "DiabExplorer",
+    "selectDateRange": "Sélectionner une plage de dates",
+    "createPdf": "Créer un PDF"
+  },
+  "GlucoseTrendChart": {
+    "title": "Tendance glycémique",
+    "description": "Suis tes glycémies sur la journée",
+    "glucose": "Glycémie",
+    "mealBolus": "Bolus Repas",
+    "correctionBolus": "Bolus Correction",
+    "carbs": "Glucides",
+    "scheduledBasal": "Basal programmée",
+    "tempBasal": "Temp Basal",
+    "start": "Début",
+    "end": "Fin",
+    "rate": "Débit"
+  },
+  "PdfGeneration": {
+    "analysis": "Analyse",
+    "untilDate": "jusqu'au",
+    "birthDate": "Date de naissance",
+    "diabeticSince": "Diabétique depuis",
+    "insulin": "Insuline",
+    "daysEvaluated": "Jours évalués",
+    "numberOfGlucoseMeasurements": "Nombre de mesures de glycémie",
+    "numberOfPumpChanges": "Nombre de changement de pompes",
+    "numberOfSensorChanges": "Nombre de changements de capteurs",
+    "standardTargetZone": "Zone cible standard",
+    "period": "Période",
+    "lowestValuePeriod": "Valeur la plus basse de la période",
+    "highestValuePeriod": "Valeur la plus élevée de la période",
+    "standardDeviation": "Écart-type",
+    "averageGlucose": "Glycémie moyenne",
+    "estimatedHbA1c": "HbA1c estimée",
+    "treatments": "Traitements",
+    "averageCarbsPerDay": "Moyenne de glucides par jour",
+    "averageInsulinPerDay": "Moyenne d'insuline per jour",
+    "averageBolusPerDay": "Moyenne bolus par jour",
+    "averageBasalPerDay": "Moyenne basale par jour",
+    "gvi": "Index de variabilité glycémique (GVI)",
+    "pgs": "Statut glycémique du patient (PGS)",
+    "excellentControl": "Excellent contrôle",
+    "goodControl": "Bon contrôle",
+    "mediumControl": "Moyen (à surveiller)",
+    "poorControl": "Mauvais contrôle",
+    "values": "valeurs",
+    "gOfCarbs": "g de glucides",
+    "units": "U"
+  },
+  "DailyStats": {
+    "title": "Statistiques du",
+    "carbsIngested": "Glucides ingérés",
+    "insulinBolus": "Insuline bolus (repas + correction)",
+    "insulinBasal": "Insuline basal (temp basal)",
+    "percentageInTarget": "Pourcentage de glycémie dans la cible (70-180 mg/dL)"
+  },
+  "RecentAlerts": {
+    "title": "Alertes Récentes",
+    "highGlucose": "Glycémie Élevée",
+    "trendingHigh": "Tendance Haute",
+    "risingFor": "En hausse depuis 45 minutes"
+  },
+  "ShareLinks": {
+    "title": "Partagez votre tableau de bord",
+    "copyLink": "Copier le lien"
+  },
+  "TimeInRange": {
+    "title": "Temps dans la cible",
+    "selectPeriod": "Sélectionner une période :",
+    "1day": "1 jour",
+    "2days": "2 jours", 
+    "1week": "1 semaine",
+    "2weeks": "2 semaines",
+    "1month": "1 mois",
+    "2months": "2 mois",
+    "veryAbove": "Très au-dessus (>240)",
+    "moderatelyAbove": "Modérément au-dessus (180-240)",
+    "inTarget": "Dans la cible (70-180)",
+    "belowTarget": "Sous la cible (<70)"
+  },
+  "LoginPage": {
+    "title": "Connexion",
+    "description": "Veuillez entrer l'URL de votre site Nightscout.",
+    "nightscoutUrl": "URL Nightscout",
+    "urlPlaceholder": "https://votre-site.herokuapp.com",
+    "token": "Token (optionnel)",
+    "tokenPlaceholder": "Votre token Nightscout (si protégé)",
+    "login": "Se connecter"
   }
 } 

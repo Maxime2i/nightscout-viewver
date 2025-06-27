@@ -31,6 +31,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TreatmentChart } from "./TreatmentChart";
+import { useTranslation } from 'react-i18next';
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -46,6 +47,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedDate, profil }: { data: any[], treatments: any[], selectedDate: Date, setSelectedDate: (date: Date) => void, profil?: any }) {
+  const { t } = useTranslation('common');
 
   // Calcul des dates disponibles (jours avec données)
   const availableDates = Array.from(
@@ -179,8 +181,8 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle>Tendance glycémique</CardTitle>
-          <CardDescription>Suis tes glycémies sur la journée</CardDescription>
+          <CardTitle>{t('GlucoseTrendChart.title')}</CardTitle>
+          <CardDescription>{t('GlucoseTrendChart.description')}</CardDescription>
         </div>
         <div className="flex items-center gap-2 min-w-[320px] justify-center">
           <button
@@ -204,7 +206,7 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
           </button>
         </div>
       </CardHeader>
-      <CardContent className="h-[500px] w-full">
+      <CardContent className="h-[500px] w-full mb-4">
         <ResponsiveContainer width="100%" height="80%">
           
           <LineChart data={chartDataDay}>
@@ -283,19 +285,19 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
         <div className="flex justify-center items-center gap-6 mt-2 text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-blue-500" />
-            <span>Glycémie</span>
+            <span>{t('GlucoseTrendChart.glucose')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3" style={{ backgroundColor: '#f59e0b' }} />
-            <span>Bolus Repas</span>
+            <span>{t('GlucoseTrendChart.mealBolus')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3" style={{ backgroundColor: '#10b981' }} />
-            <span>Bolus Correction</span>
+            <span>{t('GlucoseTrendChart.correctionBolus')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3" style={{ backgroundColor: '#be185d' }} />
-            <span>Glucides</span>
+            <span>{t('GlucoseTrendChart.carbs')}</span>
           </div>
         </div>
           <TreatmentChart treatments={treatments} selectedDate={selectedDate} profil={profil}/>

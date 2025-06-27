@@ -128,14 +128,14 @@ export default function Home() {
     // Titre principal
     doc.setFontSize(28);
     doc.setTextColor(0, 102, 204); // bleu
-    doc.text("Analyse", 12, y);
+    doc.text(t('PdfGeneration.analysis'), 12, y);
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(10);
-    doc.text("DiabExplorer", 12, y + 6);
+    doc.text(t('Header.title'), 12, y + 6);
     // Période
     const from = date?.from ? format(date.from, "dd/MM/yyyy") : "-";
     const toDate = date?.to ? format(date.to, "dd/MM/yyyy") : "-";
-    doc.text(`${from} jusqu'au ${toDate}`, 198, y + 6, { align: "right" });
+    doc.text(`${from} ${t('PdfGeneration.untilDate')} ${toDate}`, 198, y + 6, { align: "right" });
     // Ligne bleue
     doc.setDrawColor(0, 102, 204);
     doc.setLineWidth(2);
@@ -157,16 +157,16 @@ export default function Home() {
     y += 10;
     // Infos patient
     doc.setFontSize(12);
-    doc.text("Date de naissance", 40, y);
+    doc.text(t('PdfGeneration.birthDate'), 40, y);
     doc.setTextColor(0, 102, 204);
     doc.text(infos.dateNaissance.split("-").reverse().join(" "), 80, y);
     doc.setTextColor(0, 0, 0);
-    doc.text("Diabétique depuis", 120, y);
+    doc.text(t('PdfGeneration.diabeticSince'), 120, y);
     doc.setTextColor(0, 102, 204);
     doc.text(infos.diabeteDepuis.replace("-", " "), 160, y);
     y += 7;
     doc.setTextColor(0, 0, 0);
-    doc.text("Insuline", 40, y);
+    doc.text(t('PdfGeneration.insulin'), 40, y);
     doc.setTextColor(0, 102, 204);
     doc.text(infos.insuline, 80, y);
     doc.setTextColor(0, 0, 0);
@@ -349,13 +349,13 @@ export default function Home() {
     y += 10;
     doc.setFontSize(11);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Jours évalués`, 20, y);
+    doc.text(t('PdfGeneration.daysEvaluated'), 20, y);
     doc.text(`${joursEvalues}`, 60, y);
-    doc.text(`Nombre de mesures de glycémie`, 20, y + 6);
+    doc.text(t('PdfGeneration.numberOfGlucoseMeasurements'), 20, y + 6);
     doc.text(`${nbMesures}`, 80, y + 6);
-    doc.text(`Nombre de changement de pompes`, 20, y + 12);
+    doc.text(t('PdfGeneration.numberOfPumpChanges'), 20, y + 12);
     doc.text(`${nbPump}`, 90, y + 12);
-    doc.text(`Nombre de changements de capteurs`, 20, y + 18);
+    doc.text(t('PdfGeneration.numberOfSensorChanges'), 20, y + 18);
     doc.text(`${nbCapteur}`, 90, y + 18);
     // Séparateur
     doc.setDrawColor(150);
@@ -363,7 +363,7 @@ export default function Home() {
     // Zone cible
     y += 36;
     doc.setFontSize(11);
-    doc.text("Zone cible standard", 20, y);
+    doc.text(t('PdfGeneration.standardTargetZone'), 20, y);
     y += 6;
     doc.setFontSize(10);
     // Affichage des pourcentages et légende avec couleur
@@ -375,7 +375,7 @@ export default function Home() {
     doc.rect(22, legendY - 4, 4, 4, "F");
     doc.text(`>240 mg/dL`, 28, legendY);
     doc.text(`${pctAbove240} %`, 60, legendY);
-    doc.text(`${above240.length} valeurs`, 80, legendY);
+    doc.text(`${above240.length} ${t('PdfGeneration.values')}`, 80, legendY);
     legendY += 12;
 
     // 180–240 mg/dL (jaune)
@@ -383,7 +383,7 @@ export default function Home() {
     doc.rect(22, legendY - 4, 4, 4, "F");
     doc.text(`180–240 mg/dL`, 28, legendY);
     doc.text(`${pct180_240} %`, 60, legendY);
-    doc.text(`${above180.length} valeurs`, 80, legendY);
+    doc.text(`${above180.length} ${t('PdfGeneration.values')}`, 80, legendY);
     legendY += 12;
 
     // 70–180 mg/dL (vert)
@@ -391,7 +391,7 @@ export default function Home() {
     doc.rect(22, legendY - 4, 4, 4, "F");
     doc.text(`70–180 mg/dL`, 28, legendY);
     doc.text(`${pctIn} %`, 60, legendY);
-    doc.text(`${inRange.length} valeurs`, 80, legendY);
+    doc.text(`${inRange.length} ${t('PdfGeneration.values')}`, 80, legendY);
     legendY += 12;
 
     // <70 mg/dL (rouge)
@@ -399,7 +399,7 @@ export default function Home() {
     doc.rect(22, legendY - 4, 4, 4, "F");
     doc.text(`<70 mg/dL`, 28, legendY);
     doc.text(`${pctBelow} %`, 60, legendY);
-    doc.text(`${below70.length} valeurs`, 80, legendY);
+    doc.text(`${below70.length} ${t('PdfGeneration.values')}`, 80, legendY);
 
     // Barre unique segmentée VERTICALE
     // Hauteur totale de la barre (en %)
@@ -434,40 +434,40 @@ export default function Home() {
     // Période
     y += 8;
     doc.setFontSize(11);
-    doc.text("Période", 20, y);
+    doc.text(t('PdfGeneration.period'), 20, y);
     y += 6;
     doc.setFontSize(10);
-    doc.text(`Valeur la plus basse de la période`, 22, y);
+    doc.text(t('PdfGeneration.lowestValuePeriod'), 22, y);
     doc.text(`${minVal} mg/dL`, 90, y);
     y += 6;
-    doc.text(`Valeur la plus élevée de la période`, 22, y);
+    doc.text(t('PdfGeneration.highestValuePeriod'), 22, y);
     doc.text(`${maxVal} mg/dL`, 90, y);
     y += 6;
-    doc.text(`Écart-type`, 22, y);
+    doc.text(t('PdfGeneration.standardDeviation'), 22, y);
     doc.text(`${std.toFixed(1)} mg/dL`, 90, y);
     y += 6;
-    doc.text(`Index de variabilité glycémique (GVI)`, 22, y);
+    doc.text(t('PdfGeneration.gvi'), 22, y);
     doc.text(`${gvi.toFixed(2)}`, 90, y);
     doc.text(
       gvi < 25
-        ? "Excellent"
+        ? t('PdfGeneration.excellentControl')
         : gvi < 33
-        ? "Bon"
+        ? t('PdfGeneration.goodControl')
         : gvi < 40
-        ? "Modéré"
-        : "A surveiller",
+        ? t('PdfGeneration.mediumControl')
+        : t('PdfGeneration.poorControl'),
       120,
       y
     );
     y += 6;
-    doc.text(`Statut glycémique du patient (PGS)`, 22, y);
+    doc.text(t('PdfGeneration.pgs'), 22, y);
     doc.text(`${pgs.toFixed(2)}`, 90, y);
-    doc.text(pgs >= 4.5 ? "Excellent contrôle" : pgs >= 3.5 ? "Bon contrôle" : pgs >= 2.5 ? "Moyen (à surveiller)" : "Mauvais contrôle", 120, y);
+    doc.text(pgs >= 4.5 ? t('PdfGeneration.excellentControl') : pgs >= 3.5 ? t('PdfGeneration.goodControl') : pgs >= 2.5 ? t('PdfGeneration.mediumControl') : t('PdfGeneration.poorControl'), 120, y);
     y += 6;
-    doc.text(`Glycémie moyenne`, 22, y);
+    doc.text(t('PdfGeneration.averageGlucose'), 22, y);
     doc.text(`${mean.toFixed(0)} mg/dL`, 90, y);
     y += 6;
-    doc.text(`HbA1c estimée`, 22, y);
+    doc.text(t('PdfGeneration.estimatedHbA1c'), 22, y);
     doc.text(`${hba1c} %`, 90, y);
     // Séparateur
     y += 8;
@@ -476,20 +476,20 @@ export default function Home() {
     // Traitements
     y += 8;
     doc.setFontSize(11);
-    doc.text("Traitements", 20, y);
+    doc.text(t('PdfGeneration.treatments'), 20, y);
     y += 6;
     doc.setFontSize(10);
-    doc.text(`Moyenne de glucides par jour`, 22, y);
-    doc.text(`${(totalGlucides / jours).toFixed(1)} g de glucides`, 90, y);
+    doc.text(t('PdfGeneration.averageCarbsPerDay'), 22, y);
+    doc.text(`${(totalGlucides / jours).toFixed(1)} ${t('PdfGeneration.gOfCarbs')}`, 90, y);
     y += 6;
-    doc.text(`Moyenne d'insuline par jour`, 22, y);
-    doc.text(`${totalInsuline.toFixed(1)} U`, 90, y);
+    doc.text(t('PdfGeneration.averageInsulinPerDay'), 22, y);
+    doc.text(`${totalInsuline.toFixed(1)} ${t('PdfGeneration.units')}`, 90, y);
     y += 6;
-    doc.text(`Moyenne bolus par jour`, 22, y);
-    doc.text(`${(totalBolus / jours).toFixed(1)} bolus`, 90, y);
+    doc.text(t('PdfGeneration.averageBolusPerDay'), 22, y);
+    doc.text(`${(totalBolus / jours).toFixed(1)} ${t('PdfGeneration.units')}`, 90, y);
     y += 6;
-    doc.text(`Moyenne basale par jour`, 22, y);
-    doc.text(`${realBasalPerDay.toFixed(1)} U`, 90, y);
+    doc.text(t('PdfGeneration.averageBasalPerDay'), 22, y);
+    doc.text(`${realBasalPerDay.toFixed(1)} ${t('PdfGeneration.units')}`, 90, y);
     // --- Fin ---
     // doc.save(`rapport_glycemie_${infos.nom}_${infos.prenom}.pdf`);
     window.open(doc.output("bloburl"), "_blank");

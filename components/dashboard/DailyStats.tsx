@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { StatCard } from "./StatCard";
 import { Droplet, PieChart, Utensils, Target } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 interface StatCardProps {
   title: string;
@@ -14,13 +15,12 @@ interface StatCardProps {
 }
 
 export function DailyStats({ data, treatments, selectedDate }: { data: any[], treatments: any[], selectedDate: Date }) {
+  const { t } = useTranslation('common');
   // Début et fin de la journée sélectionnée
   const startOfDay = new Date(selectedDate);
   startOfDay.setHours(0, 0, 0, 0);
   const endOfDay = new Date(selectedDate);
   endOfDay.setHours(23, 59, 59, 999);
-
-  console.log(startOfDay, endOfDay);
 
   // Glucides ingérés (unique par identifier)
   const carbTreatments = treatments
@@ -61,14 +61,14 @@ export function DailyStats({ data, treatments, selectedDate }: { data: any[], tr
   return (
     <Card className={cn("p-4")}> 
       <CardHeader>
-        <CardTitle className="text-lg font-bold">Statistiques du {format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })}</CardTitle>
+        <CardTitle className="text-lg font-bold">{t('DailyStats.title')} {format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })}</CardTitle>
       </CardHeader>
       <CardContent>
         <ul className="space-y-2 text-base">
-          <li><strong>Glucides ingérés :</strong> {totalCarbs.toFixed(0)} g</li>
-          <li><strong>Insuline bolus (repas + correction) :</strong> {totalBolus.toFixed(2)} U</li>
-          <li><strong>Insuline basal (temp basal) :</strong> {totalBasal.toFixed(2)} U</li>
-          <li><strong>Pourcentage de glycémie dans la cible (70-180 mg/dL) :</strong> {percentInRange.toFixed(0)}%</li>
+          <li><strong>{t('DailyStats.carbsIngested')} :</strong> {totalCarbs.toFixed(0)} g</li>
+          <li><strong>{t('DailyStats.insulinBolus')} :</strong> {totalBolus.toFixed(2)} U</li>
+          <li><strong>{t('DailyStats.insulinBasal')} :</strong> {totalBasal.toFixed(2)} U</li>
+          <li><strong>{t('DailyStats.percentageInTarget')} :</strong> {percentInRange.toFixed(0)}%</li>
         </ul>
       </CardContent>
     </Card>

@@ -11,8 +11,10 @@ import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import i18n from "../../i18n";
+import { useTranslation } from 'react-i18next';
 
 export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | undefined, setDate: (date: DateRange | undefined) => void, onOpenPdfModal: () => void }) {
+  const { t } = useTranslation('common');
   const router = useRouter();
   const logout = () => {
     localStorage.removeItem("nightscoutUrl");
@@ -30,7 +32,7 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
   return (
     <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-950 border-b">
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-bold">DiabExplorer</h1>
+        <h1 className="text-xl font-bold">{t('Header.title')}</h1>
         <Select value={lang} onValueChange={handleLangChange}>
           <SelectTrigger className="w-24 h-8">
             <SelectValue />
@@ -62,7 +64,7 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
                   format(date.from, "LLL dd, y")
                 )
               ) : (
-                <span>Sélectionner une plage de dates</span>
+                <span>{t('Header.selectDateRange')}</span>
               )}
             </Button>
           </PopoverTrigger>
@@ -78,7 +80,7 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
           </PopoverContent>
         </Popover>
         <Button onClick={onOpenPdfModal} className="h-8 px-4">
-          Créer un PDF
+          {t('Header.createPdf')}
         </Button>
         <Button onClick={logout} className="h-8 px-4">
           <LogOut className="w-4 h-4" />

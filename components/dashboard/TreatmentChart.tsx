@@ -1,21 +1,23 @@
 import { ResponsiveContainer, AreaChart, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceDot, ReferenceArea, Line, Area } from "recharts";
 import { format } from "date-fns";
 import React from "react";
+import { useTranslation } from 'react-i18next';
 
 
 
 // Tooltip personnalisé pour afficher les infos du temp basal
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
+    const { t } = useTranslation('common');
     console.log("payload", payload, "active", active, "label", label);
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     if (data.tempBasal) {
       return (
         <div className="bg-white p-2 border rounded-md shadow-lg">
-          <div><b>Temp Basal</b></div>
-          <div>Début : {data.tempBasal.start}</div>
-          <div>Fin : {data.tempBasal.end}</div>
-          <div>Débit : {data.tempBasal.rate} U/h</div>
+          <div><b>{t('GlucoseTrendChart.tempBasal')}</b></div>
+          <div>{t('GlucoseTrendChart.start')} : {data.tempBasal.start}</div>
+          <div>{t('GlucoseTrendChart.end')} : {data.tempBasal.end}</div>
+          <div>{t('GlucoseTrendChart.rate')} : {data.tempBasal.rate} U/h</div>
         </div>
       );
     }
@@ -25,6 +27,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 };
 
 export function TreatmentChart({ treatments, selectedDate, profil }: { treatments: any[], selectedDate: Date, profil?: any }) {
+  const { t } = useTranslation('common');
   console.log("selectedDate", selectedDate);
 
   // Début et fin de la journée sélectionnée
@@ -195,7 +198,7 @@ export function TreatmentChart({ treatments, selectedDate, profil }: { treatment
           fill="#8fd3e8"
           fillOpacity={0.5}
           isAnimationActive={false}
-          name="Basal programmée"
+          name={t('GlucoseTrendChart.scheduledBasal')}
         />
         <Line
           yAxisId="left"
@@ -204,7 +207,7 @@ export function TreatmentChart({ treatments, selectedDate, profil }: { treatment
           stroke="#8fd3e8"
           strokeWidth={2}
           dot={false}
-          name="Basal programmée"
+          name={t('GlucoseTrendChart.scheduledBasal')}
         />
       </AreaChart>
     </ResponsiveContainer>

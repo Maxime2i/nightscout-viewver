@@ -19,6 +19,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { useTranslation } from 'react-i18next';
 
 interface StatCardProps {
   title: string;
@@ -37,6 +38,7 @@ export function TimeInRange({
   treatments: any[];
   selectedDate: Date;
 }) {
+  const { t } = useTranslation('common');
   // Sélecteur de période
   const [period, setPeriod] = useState("1jour");
 
@@ -126,23 +128,23 @@ export function TimeInRange({
     <Card className={cn("p-4")}>
       <CardHeader>
         <CardTitle className="text-lg font-bold">
-          Temps passé dans la cible
+          {t('TimeInRange.title')}
         </CardTitle>
         <div className="mt-2 flex row">
           <label htmlFor="period-select" className="mr-2">
-            Période :
+            {t('TimeInRange.selectPeriod')}
           </label>
           <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-40 max-h-6" id="period-select">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="1jour">1 jour</SelectItem>
-              <SelectItem value="2jours">2 jours</SelectItem>
-              <SelectItem value="1semaine">1 semaine</SelectItem>
-              <SelectItem value="2semaines">2 semaines</SelectItem>
-              <SelectItem value="1mois">1 mois</SelectItem>
-              <SelectItem value="2mois">2 mois</SelectItem>
+              <SelectItem value="1jour">{t('TimeInRange.1day')}</SelectItem>
+              <SelectItem value="2jours">{t('TimeInRange.2days')}</SelectItem>
+              <SelectItem value="1semaine">{t('TimeInRange.1week')}</SelectItem>
+              <SelectItem value="2semaines">{t('TimeInRange.2weeks')}</SelectItem>
+              <SelectItem value="1mois">{t('TimeInRange.1month')}</SelectItem>
+              <SelectItem value="2mois">{t('TimeInRange.2months')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -169,10 +171,10 @@ export function TimeInRange({
             />
           </div>
           <div className="flex flex-col justify-between h-48 text-xs py-1 gap-1">
-            <span className="text-orange-400 font-bold">Très au-dessus (&gt;240) : {percentAbove240.toFixed(0)}%</span>
-            <span className="text-yellow-400 font-bold">Modérément au-dessus (180-240) : {percentAbove180.toFixed(0)}%</span>
-            <span className="text-green-500 font-bold">Dans la cible (70-180) : {percentInRange.toFixed(0)}%</span>
-            <span className="text-red-500 font-bold">Sous la cible (&lt;70) : {percentBelow.toFixed(0)}%</span>
+            <span className="text-orange-400 font-bold">{t('TimeInRange.veryAbove')} : {percentAbove240.toFixed(0)}%</span>
+            <span className="text-yellow-400 font-bold">{t('TimeInRange.moderatelyAbove')} : {percentAbove180.toFixed(0)}%</span>
+            <span className="text-green-500 font-bold">{t('TimeInRange.inTarget')} : {percentInRange.toFixed(0)}%</span>
+            <span className="text-red-500 font-bold">{t('TimeInRange.belowTarget')} : {percentBelow.toFixed(0)}%</span>
           </div>
         </div>
       </CardContent>
