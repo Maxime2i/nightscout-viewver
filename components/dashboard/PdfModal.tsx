@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 interface PdfModalProps {
   open: boolean;
   onClose: () => void;
-  onGenerate: (infos: { nom: string; prenom: string; dateNaissance: string; insuline: string; diabeteDepuis: string }) => void;
+  onGenerate: (infos: { nom: string; prenom: string; dateNaissance: string; insuline: string; diabeteDepuis: string; includeCharts: boolean }) => void;
 }
 
 export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate }) => {
@@ -14,6 +14,7 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
   const [dateNaissance, setDateNaissance] = useState("");
   const [insuline, setInsuline] = useState("");
   const [diabeteDepuis, setDiabeteDepuis] = useState("");
+  const [includeCharts, setIncludeCharts] = useState(true); // Activé par défaut
 
   // Pré-remplissage depuis le localStorage à l'ouverture
   React.useEffect(() => {
@@ -27,6 +28,7 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
           setDateNaissance(infos.dateNaissance || "");
           setInsuline(infos.insuline || "");
           setDiabeteDepuis(infos.diabeteDepuis || "");
+          setIncludeCharts(infos.includeCharts !== undefined ? infos.includeCharts : true);
         } catch {}
       }
     }
@@ -44,9 +46,9 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
             // Sauvegarde dans le localStorage
             localStorage.setItem(
               "pdfInfos",
-              JSON.stringify({ nom, prenom, dateNaissance, insuline, diabeteDepuis })
+              JSON.stringify({ nom, prenom, dateNaissance, insuline, diabeteDepuis, includeCharts })
             );
-            onGenerate({ nom, prenom, dateNaissance, insuline, diabeteDepuis });
+            onGenerate({ nom, prenom, dateNaissance, insuline, diabeteDepuis, includeCharts });
           }}
           className="space-y-4"
         >
@@ -69,6 +71,18 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
           <div>
             <label className="block text-sm font-medium">{t('PdfModal.diabeticSince')}</label>
             <input type="month" className="w-full border rounded px-2 py-1" value={diabeteDepuis} onChange={e => setDiabeteDepuis(e.target.value)} required />
+          </div>
+          <div className="flex items-center space-x-2">
+            <input 
+              type="checkbox" 
+              id="includeCharts" 
+              checked={includeCharts} 
+              onChange={e => setIncludeCharts(e.target.checked)}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="includeCharts" className="text-sm font-medium">
+              {t('PdfModal.includeCharts')}
+            </label>
           </div>
           <div className="flex justify-end space-x-2 pt-2">
             <button type="button" className="px-4 py-2 bg-gray-300 rounded" onClick={onClose}>{t('PdfModal.cancel')}</button>

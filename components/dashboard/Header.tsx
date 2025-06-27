@@ -31,6 +31,7 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
   return (
     <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-950 border-b">
       <div className="flex items-center gap-4">
+        <img src="/logo.png" alt="Logo" className="h-8 w-8 border border-black rounded-sm" />
         <h1 className="text-xl font-bold">{t('Header.title')}</h1>
         <Select value={lang} onValueChange={handleLangChange}>
           <SelectTrigger className="w-24 h-8">

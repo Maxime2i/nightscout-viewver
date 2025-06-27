@@ -47,6 +47,7 @@
     "birthDate": "Date de naissance",
     "insulin": "Insuline",
     "diabeticSince": "Diabétique depuis",
+    "includeCharts": "Inclure les graphiques quotidiens",
     "cancel": "Annuler",
     "generatePdf": "Générer le PDF"
   },
