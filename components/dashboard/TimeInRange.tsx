@@ -2,16 +2,12 @@ import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-  format,
   subDays,
   subWeeks,
   subMonths,
   startOfDay,
   endOfDay,
 } from "date-fns";
-import { fr } from "date-fns/locale";
-import { StatCard } from "./StatCard";
-import { Droplet, PieChart, Utensils, Target } from "lucide-react";
 import {
   Select,
   SelectTrigger,
@@ -20,22 +16,13 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { useTranslation } from 'react-i18next';
-
-interface StatCardProps {
-  title: string;
-  value: string;
-  description: string;
-  icon: React.ReactNode;
-  color?: string;
-}
+import { NightscoutEntry } from "@/types/nightscout";
 
 export function TimeInRange({
   data,
-  treatments,
   selectedDate,
 }: {
-  data: any[];
-  treatments: any[];
+  data: NightscoutEntry[];
   selectedDate: Date;
 }) {
   const { t } = useTranslation('common');
@@ -44,7 +31,7 @@ export function TimeInRange({
 
   // Calcul dynamique de la période
   let startPeriod: Date;
-  let endPeriod: Date = endOfDay(selectedDate);
+  const endPeriod: Date = endOfDay(selectedDate);
   switch (period) {
     case "1jour":
       startPeriod = startOfDay(selectedDate);
@@ -67,48 +54,6 @@ export function TimeInRange({
     default:
       startPeriod = startOfDay(selectedDate);
   }
-
-  // Glucides ingérés (unique par identifier)
-  const carbTreatments = treatments.filter((t) => {
-    const d = new Date(t.date);
-    return (
-      t.carbs && t.date && d >= startPeriod && d <= endPeriod && t.identifier
-    );
-  });
-  // On retire les doublons sur 'identifier'
-  const uniqueCarbs = Array.from(
-    new Map(carbTreatments.map((t) => [t.identifier, t])).values()
-  );
-  const totalCarbs = uniqueCarbs.reduce((acc, t) => acc + (t.carbs || 0), 0);
-
-  // Insuline bolus (Meal Bolus ou Correction Bolus)
-  const totalBolus = treatments
-    .filter((t) => {
-      const d = new Date(t.date);
-      return (
-        t.insulin &&
-        t.date &&
-        d >= startPeriod &&
-        d <= endPeriod &&
-        (t.eventType === "Meal Bolus" || t.eventType === "Correction Bolus")
-      );
-    })
-    .reduce((acc, t) => acc + (t.insulin || 0), 0);
-
-  // Insuline basal (Temp Basal)
-  const totalBasal = treatments
-    .filter((t) => {
-      const d = new Date(t.date);
-      return (
-        t.eventType === "Temp Basal" &&
-        t.date &&
-        t.duration &&
-        t.rate &&
-        d >= startPeriod &&
-        d <= endPeriod
-      );
-    })
-    .reduce((acc, t) => acc + ((t.rate || 0) * (t.duration || 0)) / 60, 0); // U/h * min / 60 = U
 
   // Pourcentage de glycémie dans la cible (70-180 mg/dL)
   const periodGlucose = data.filter((e) => {

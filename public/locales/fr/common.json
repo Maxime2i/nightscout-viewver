@@ -33,7 +33,7 @@
     "exportPdf": "Exporter PDF"
   },
   "FeedbackCard": {
-    "title": "Donner un feedback",
+    "title": "Donner un feedback / une suggestion",
     "placeholder": "Votre message...",
     "successMessage": "Merci pour votre feedback !",
     "errorMessage": "Erreur lors de l'envoi du feedback. Réessaie plus tard.",
@@ -116,6 +116,13 @@
   "ShareLinks": {
     "title": "Partagez votre tableau de bord",
     "copyLink": "Copier le lien"
+  },
+  "SupportProject": {
+    "title": "Soutenir le Projet",
+    "description": "Aidez-nous à maintenir ce projet en fonctionnement et à couvrir les coûts d'hébergement. Votre soutien nous tient à cœur !",
+    "hostingCosts": "Coûts d'hébergement et de développement",
+    "buyMeCoffee": "Offrez-moi un café",
+    "thankYou": "Merci pour votre soutien ! ❤️"
   },
   "TimeInRange": {
     "title": "Temps dans la cible",

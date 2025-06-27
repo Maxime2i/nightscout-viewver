@@ -1,18 +1,8 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useTranslation } from 'react-i18next';
-
-interface StatCardProps {
-  title: string;
-  value: string;
-  description: string;
-  icon: React.ReactNode;
-  color?: string;
-}
 
 export function ShareLinks() {
   const { t } = useTranslation('common');

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Bell, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";

@@ -1,32 +1,13 @@
-import { ResponsiveContainer, AreaChart, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceDot, ReferenceArea, Line, Area } from "recharts";
+import { ResponsiveContainer, AreaChart, XAxis, YAxis, CartesianGrid, ReferenceDot, ReferenceArea, Line, Area } from "recharts";
 import { format } from "date-fns";
 import React from "react";
 import { useTranslation } from 'react-i18next';
+import { NightscoutTreatment, NightscoutProfile } from "@/types/nightscout";
 
 
 
-// Tooltip personnalisé pour afficher les infos du temp basal
-const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: any[]; label?: string }) => {
-    const { t } = useTranslation('common');
-    console.log("payload", payload, "active", active, "label", label);
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    if (data.tempBasal) {
-      return (
-        <div className="bg-white p-2 border rounded-md shadow-lg">
-          <div><b>{t('GlucoseTrendChart.tempBasal')}</b></div>
-          <div>{t('GlucoseTrendChart.start')} : {data.tempBasal.start}</div>
-          <div>{t('GlucoseTrendChart.end')} : {data.tempBasal.end}</div>
-          <div>{t('GlucoseTrendChart.rate')} : {data.tempBasal.rate} U/h</div>
-        </div>
-      );
-    }
-    // Tu peux ajouter d'autres tooltips ici (bolus, glucides...)
-  }
-  return null;
-};
 
-export function TreatmentChart({ treatments, selectedDate, profil }: { treatments: any[], selectedDate: Date, profil?: any }) {
+export function TreatmentChart({ treatments, selectedDate, profil }: { treatments: NightscoutTreatment[], selectedDate: Date, profil?: NightscoutProfile | NightscoutProfile[] }) {
   const { t } = useTranslation('common');
   console.log("selectedDate", selectedDate);
 
@@ -54,47 +35,56 @@ export function TreatmentChart({ treatments, selectedDate, profil }: { treatment
   // Extraction des bolus sur la journée
   const bolusPoints = treatments
     .filter(t => {
-      const d = new Date(t.date);
-      return t.insulin && t.date && d >= startOfDay && d <= endOfDay;
+      const dateStr = t.date || t.timestamp;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return t.insulin && dateStr && d >= startOfDay && d <= endOfDay;
     })
     .map(t => ({
-      date: new Date(t.date).getTime(),
+      date: new Date(t.date || t.timestamp).getTime(),
       insulin: t.insulin
     }));
 
   // Extraction des glucides sur la journée
   const carbsPoints = treatments
     .filter(t => {
-      const d = new Date(t.date);
-      return t.carbs && t.date && d >= startOfDay && d <= endOfDay;
+      const dateStr = t.date || t.timestamp;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return t.carbs && dateStr && d >= startOfDay && d <= endOfDay;
     })
     .map(t => ({
-      date: new Date(t.date).getTime(),
+      date: new Date(t.date || t.timestamp).getTime(),
       carbs: t.carbs
     }));
 
   // Extraction des Temp Basal sur la journée
   const tempBasalPoints = treatments
     .filter(t => {
-      const d = new Date(t.date);
-      return t.eventType === "Temp Basal" && t.date && t.duration && t.rate && d >= startOfDay && d <= endOfDay;
+      const dateStr = t.date || t.timestamp;
+      if (!dateStr) return false;
+      const d = new Date(dateStr);
+      return t.eventType === "Temp Basal" && dateStr && t.duration && t.rate && d >= startOfDay && d <= endOfDay;
     })
     .map(t => {
-      const startTime = new Date(t.date).getTime();
+      const startTime = new Date(t.date || t.timestamp).getTime();
       return {
         start: startTime,
-        end: startTime + t.duration * 60000,
-        rate: t.rate,
+        end: startTime + (t.duration || 0) * 60000,
+        rate: t.rate || 0,
       };
     });
 
   // Trouver le profil actif pour le jour sélectionné
-  let activeProfile: any = null;
+  let activeProfile: NightscoutProfile | null = null;
   if (profil && Array.isArray(profil)) {
     const selectedDayTs = new Date(selectedDate).setHours(0, 0, 0, 0);
     activeProfile = profil
-      .filter((p: any) => p.date <= selectedDayTs)
-      .sort((a: any, b: any) => b.date - a.date)[0];
+      .filter((p: NightscoutProfile) => (p.date || 0) <= selectedDayTs)
+      .sort((a: NightscoutProfile, b: NightscoutProfile) => (b.date || 0) - (a.date || 0))[0];
+  } else if (profil && !Array.isArray(profil)) {
+    // Si profil est un objet unique, l'utiliser directement
+    activeProfile = profil;
   }
 
   // Fonction pour trouver la valeur de basal programmée à un instant donné
@@ -161,7 +151,7 @@ export function TreatmentChart({ treatments, selectedDate, profil }: { treatment
           tickFormatter={formatXAxis}
         />
         <YAxis yAxisId="left" orientation="left" domain={[0, 'dataMax']} />
-        <Tooltip content={<CustomTooltip />} />
+        {/* <Tooltip content={<CustomTooltip />} /> */}
         {/* Temp Basal sous forme de barres */}
         {tempBasalPoints.map((pt, i) => (
           <ReferenceArea

@@ -1,10 +1,11 @@
 import { StatCard } from "./StatCard";
-import { ArrowDownUp, ArrowUpRight, ArrowDownRight, Target, Clock } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, Target, Clock } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { NightscoutEntry } from "@/types/nightscout";
 
-export function StatsGrid({ data }: { data: any[] }) {
+export function StatsGrid({ data }: { data: NightscoutEntry[] }) {
   const { t } = useTranslation('common');
 
   const averageGlucose = data.reduce((acc, entry) => acc + entry.sgv, 0) / data.length;
@@ -19,8 +20,12 @@ export function StatsGrid({ data }: { data: any[] }) {
   const timeInRangePercentage = (timeInRange / data.length) * 100;
 
   // Trouver la date de la plus haute et la plus basse glycémie
-  const highestEntry = data.reduce((max, entry) => (entry.sgv > (max?.sgv ?? -Infinity) ? entry : max), null);
-  const lowestEntry = data.reduce((min, entry) => (entry.sgv < (min?.sgv ?? Infinity) ? entry : min), null);
+  const highestEntry = data.length > 0
+    ? data.reduce((max, entry) => (entry.sgv > max.sgv ? entry : max), data[0])
+    : null;
+  const lowestEntry = data.length > 0
+    ? data.reduce((min, entry) => (entry.sgv < min.sgv ? entry : min), data[0])
+    : null;
   const highestDate = highestEntry && highestEntry.date ? format(new Date(highestEntry.date), "dd/MM/yyyy HH:mm", { locale: fr }) : "-";
   const lowestDate = lowestEntry && lowestEntry.date ? format(new Date(lowestEntry.date), "dd/MM/yyyy HH:mm", { locale: fr }) : "-";
 

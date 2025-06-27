@@ -2,19 +2,10 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { StatCard } from "./StatCard";
-import { Droplet, PieChart, Utensils, Target } from "lucide-react";
 import { useTranslation } from 'react-i18next';
+import { NightscoutEntry, NightscoutTreatment } from "@/types/nightscout";
 
-interface StatCardProps {
-  title: string;
-  value: string;
-  description: string;
-  icon: React.ReactNode;
-  color?: string;
-}
-
-export function DailyStats({ data, treatments, selectedDate }: { data: any[], treatments: any[], selectedDate: Date }) {
+export function DailyStats({ data, treatments, selectedDate }: { data: NightscoutEntry[], treatments: NightscoutTreatment[], selectedDate: Date }) {
   const { t } = useTranslation('common');
   // Début et fin de la journée sélectionnée
   const startOfDay = new Date(selectedDate);

@@ -33,7 +33,7 @@
     "exportPdf": "Export PDF"
   },
   "FeedbackCard": {
-    "title": "Give Feedback",
+    "title": "Give Feedback / Suggestion",
     "placeholder": "Your message...",
     "successMessage": "Thank you for your feedback!",
     "errorMessage": "Error sending feedback. Please try again later.",
@@ -116,6 +116,13 @@
   "ShareLinks": {
     "title": "Share your dashboard",
     "copyLink": "Copy link"
+  },
+  "SupportProject": {
+    "title": "Support the Project",
+    "description": "Help us keep this project running and cover hosting costs. Your support means the world to us!",
+    "hostingCosts": "Hosting & Development Costs",
+    "buyMeCoffee": "Buy Me a Coffee",
+    "thankYou": "Thank you for your support! ❤️"
   },
   "TimeInRange": {
     "title": "Time in Range",

@@ -5,21 +5,18 @@ import { useRouter } from "next/navigation";
 import { Header } from "@/components/dashboard/Header";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { GlucoseTrendChart } from "@/components/dashboard/GlucoseTrendChart";
-import { QuickActions } from "@/components/dashboard/QuickActions";
-import { RecentAlerts } from "@/components/dashboard/RecentAlerts";
-import { DataManagement } from "@/components/dashboard/DataManagement";
 import { DateRange } from "react-day-picker";
-import { ReferenceDot } from "recharts";
 import { format } from "date-fns";
-import { TreatmentChart } from "@/components/dashboard/TreatmentChart";
 import { DailyStats } from "@/components/dashboard/DailyStats";
 import { ShareLinks } from "@/components/dashboard/ShareLinks";
+import { SupportProject } from "@/components/dashboard/SupportProject";
 import { TimeInRange } from "@/components/dashboard/TimeInRange";
 import { FeedbackCard } from "@/components/dashboard/FeedbackCard";
 import { PdfModal } from "@/components/dashboard/PdfModal";
 import jsPDF from "jspdf";
 import { useTranslation } from 'react-i18next';
 import '../i18n';
+import { NightscoutEntry, NightscoutTreatment, NightscoutProfile } from '@/types/nightscout';
 
 export default function Home() {
   const router = useRouter();
@@ -28,7 +25,7 @@ export default function Home() {
   const [date, setDate] = useState<DateRange | undefined>(() => {
     const to = new Date();
     const from = new Date();
-    from.setDate(to.getDate() - 6);
+    from.setDate(to.getDate() - 14);
     return { from, to };
   });
 
@@ -49,10 +46,11 @@ export default function Home() {
     }
   }, [router]);
 
-  const [data, setData] = useState<any[]>([]);
-  const [treatments, setTreatments] = useState<any[]>([]);
+  const [data, setData] = useState<NightscoutEntry[]>([]);
+  const [treatments, setTreatments] = useState<NightscoutTreatment[]>([]);
   const [loading, setLoading] = useState(false);
-  const [profil, setProfil] = useState<any>(null);
+  const [profil, setProfil] = useState<NightscoutProfile | null>(null);
+
   useEffect(() => {
     if (url && date?.from && date?.to) {
       setLoading(true);
@@ -73,7 +71,7 @@ export default function Home() {
         fetch(treatmentsUrl).then((res) => res.json()),
         fetch(profilUrl).then((res) => res.json()),
       ])
-        .then(([entries, treatments, profil]) => {
+        .then(([entries, treatments, profil]: [NightscoutEntry[], NightscoutTreatment[], NightscoutProfile]) => {
           setData(entries);
           setTreatments(treatments);
           setProfil(profil);
@@ -82,7 +80,7 @@ export default function Home() {
           console.log(
             "treatments",
             treatments.filter(
-              (t: any) =>
+              (t: NightscoutTreatment) =>
                 t.eventType !== "Meal Bolus" &&
                 t.eventType !== "Temp Basal" &&
                 t.eventType !== "Carb Correction" &&
@@ -96,24 +94,6 @@ export default function Home() {
         });
     }
   }, [url, date]);
-
-  const bolusPoints = treatments
-    .filter((t) => t.insulin && t.date)
-    .map((t) => ({
-      time: format(new Date(t.date), "HH:mm"),
-      date: t.date,
-      insulin: t.insulin,
-    }));
-
-  const carbsPoints = treatments
-    .filter((t) => t.carbs && t.date)
-    .map((t) => ({
-      time: format(new Date(t.date), "HH:mm"),
-      date: t.date,
-      carbs: t.carbs,
-    }));
-
-  console.log("profil", profil);
 
   // Nouvelle fonction avancée pour générer le PDF style Nightscout Reporter
   const handleGeneratePdf = (infos: {
@@ -281,15 +261,16 @@ export default function Home() {
       .reduce((sum, t) => sum + (t.insulin || 0), 0);
 
     // --- Calcul basale réelle délivrée ---
-    function getBasalProfileValueAt(ts: number, profil: any, dateRef: Date) {
-      if (!profil || !Array.isArray(profil)) return 0;
-      // Trouver le profil actif pour le jour
-      const selectedDayTs = new Date(dateRef).setHours(0, 0, 0, 0);
-      const activeProfile = profil
-        .filter((p: any) => p.date <= selectedDayTs)
-        .sort((a: any, b: any) => b.date - a.date)[0];
-      if (!activeProfile) return 0;
-      const basalArray = activeProfile.store[activeProfile.defaultProfile].basal;
+    function getBasalProfileValueAt(ts: number, profil: NightscoutProfile | null, dateRef: Date): number {
+      if (!profil || !profil.store) return 0;
+      
+      // Utiliser le profil par défaut
+      const defaultProfileName = profil.defaultProfile;
+      const profileData = profil.store[defaultProfileName];
+      
+      if (!profileData || !profileData.basal) return 0;
+      
+      const basalArray = profileData.basal;
       let last = basalArray[0];
       for (const b of basalArray) {
         const d = new Date(dateRef);
@@ -319,11 +300,11 @@ export default function Home() {
         // Récupérer tous les temp basal de la journée
         const dayStart = new Date(day); dayStart.setHours(0,0,0,0);
         const dayEnd = new Date(day); dayEnd.setHours(23,59,59,999);
-        const tempBasals = treatments.filter((t: any) => t.eventType === "Temp Basal" && t.date && t.duration && t.rate && new Date(t.date) >= dayStart && new Date(t.date) <= dayEnd)
-          .map((t: any) => ({
-            start: new Date(t.date).getTime(),
-            end: new Date(t.date).getTime() + t.duration * 60000,
-            rate: t.rate
+        const tempBasals = treatments.filter((t: NightscoutTreatment) => t.eventType === "Temp Basal" && t.timestamp && t.duration && t.rate && new Date(t.timestamp) >= dayStart && new Date(t.timestamp) <= dayEnd)
+          .map((t: NightscoutTreatment) => ({
+            start: new Date(t.timestamp).getTime(),
+            end: new Date(t.timestamp).getTime() + (t.duration || 0) * 60000,
+            rate: t.rate || 0
           }));
         // Pour chaque minute de la journée
         let delivered = 0;
@@ -527,7 +508,7 @@ export default function Home() {
                   treatments={treatments}
                   selectedDate={selectedDate}
                   setSelectedDate={setSelectedDate}
-                  profil={profil}
+                  profil={profil ?? undefined}
                 />
               </div>
               <div className="space-y-6">
@@ -538,10 +519,10 @@ export default function Home() {
                 />
                 <TimeInRange
                   data={data}
-                  treatments={treatments}
                   selectedDate={selectedDate}
                 />
                 <ShareLinks />
+                <SupportProject />
                 <FeedbackCard />
                 <PdfModal
                   open={pdfModalOpen}

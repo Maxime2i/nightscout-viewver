@@ -39,7 +39,7 @@ export default function LoginPage() {
       localStorage.setItem("nightscoutToken", nightscoutToken);
       router.push("/");
     }
-  }, []);
+  }, [router]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">

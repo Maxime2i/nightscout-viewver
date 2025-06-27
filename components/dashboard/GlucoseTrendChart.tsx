@@ -18,22 +18,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useEffect, useState } from "react";
-import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TreatmentChart } from "./TreatmentChart";
 import { useTranslation } from 'react-i18next';
+import { NightscoutEntry, NightscoutTreatment, NightscoutProfile } from "@/types/nightscout";
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface TooltipPayload {
+  value: number;
+  name: string;
+  color: string;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipPayload[];
+  label?: string;
+}
+
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-2 border rounded-md shadow-lg">
@@ -46,7 +50,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedDate, profil }: { data: any[], treatments: any[], selectedDate: Date, setSelectedDate: (date: Date) => void, profil?: any }) {
+export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedDate, profil }: { data: NightscoutEntry[], treatments: NightscoutTreatment[], selectedDate: Date, setSelectedDate: (date: Date) => void, profil?: NightscoutProfile }) {
   const { t } = useTranslation('common');
 
   // Calcul des dates disponibles (jours avec données)
@@ -228,7 +232,7 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
                 key={`carbs-${index}`}
                 segment={[
                   { x: carbs.date, y: 40 },
-                  { x: carbs.date, y: 40 + carbs.carbs * CARBS_SCALE_FACTOR },
+                  { x: carbs.date, y: 40 + (carbs.carbs || 0) * CARBS_SCALE_FACTOR },
                 ]}
                 stroke={"#f59e0b"}
                 strokeWidth={2}
@@ -251,7 +255,7 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
                 key={`bolus-${index}`}
                 segment={[
                   { x: bolus.date, y: 40 },
-                  { x: bolus.date, y: 40 + bolus.insulin * INSULIN_SCALE_FACTOR },
+                  { x: bolus.date, y: 40 + (bolus.insulin || 0) * INSULIN_SCALE_FACTOR },
                 ]}
                 stroke={bolus.type === "Meal Bolus" ? "#be185d" : "#10b981"}
                 strokeWidth={2}
