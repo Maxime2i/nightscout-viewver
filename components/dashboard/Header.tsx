@@ -30,12 +30,7 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
 
   return (
     <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-950 border-b">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center text-white font-bold">
-          BG
-        </div>
-        <h1 className="text-xl font-bold">BG Viewer</h1>
-      </div>
+        <h1 className="text-xl font-bold">DiabExplorer</h1>
       <div className="flex items-center gap-4">
         <Popover>
           <PopoverTrigger asChild>

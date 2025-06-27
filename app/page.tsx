@@ -128,7 +128,7 @@ export default function Home() {
     doc.text("Analyse", 12, y);
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(10);
-    doc.text("BG Viewer", 12, y + 6);
+    doc.text("DiabExplorer", 12, y + 6);
     // Période
     const from = date?.from ? format(date.from, "dd/MM/yyyy") : "-";
     const toDate = date?.to ? format(date.to, "dd/MM/yyyy") : "-";
@@ -217,7 +217,48 @@ export default function Home() {
     // GVI (index de variabilité glycémique)
     const gvi = mean ? (std / mean) * 100 : 0;
     // PGS (statut glycémique patient)
-    const pgs = mean ? mean + std : 0;
+    const tir =
+      (values.filter((v) => v >= 70 && v <= 180).length / values.length) * 100;
+    let tirScore = 0;
+    if (tir >= 70) tirScore = 5;
+    else if (tir >= 55) tirScore = 4;
+    else if (tir >= 40) tirScore = 3;
+    else if (tir >= 25) tirScore = 2;
+    else if (tir >= 10) tirScore = 1;
+
+    const tar = (values.filter((v) => v > 180).length / values.length) * 100;
+    let tarScore = 0;
+    if (tar < 25) tarScore = 5;
+    else if (tar < 40) tarScore = 4;
+    else if (tar < 55) tarScore = 3;
+    else if (tar < 70) tarScore = 2;
+    else if (tar < 90) tarScore = 1;
+
+    const tbr = (values.filter((v) => v < 70).length / values.length) * 100;
+    let tbrScore = 0;
+    if (tbr < 4) tbrScore = 5;
+    else if (tbr < 10) tbrScore = 4;
+    else if (tbr < 15) tbrScore = 3;
+    else if (tbr < 25) tbrScore = 2;
+    else if (tbr < 40) tbrScore = 1;
+
+    const cv = (std / mean) * 100;
+    let cvScore = 0;
+    if (cv < 25) cvScore = 5;
+    else if (cv < 33) cvScore = 4;
+    else if (cv < 40) cvScore = 3;
+    else if (cv < 50) cvScore = 2;
+    else if (cv < 60) cvScore = 1;
+
+    let meanScore = 0;
+    if (mean < 120) meanScore = 5;
+    else if (mean < 145) meanScore = 4;
+    else if (mean < 170) meanScore = 3;
+    else if (mean < 200) meanScore = 2;
+    else if (mean < 250) meanScore = 1;
+
+    const pgs = (tirScore * 2 + tarScore + tbrScore + cvScore + meanScore) / 6;
+
     // HbA1c estimée
     const hba1c = mean ? ((mean + 46.7) / 28.7).toFixed(1) : "-";
     // Moyennes traitements
@@ -226,10 +267,7 @@ export default function Home() {
       (sum, t) => sum + (t.carbs || 0),
       0
     );
-    const totalInsuline = treatments.reduce(
-      (sum, t) => sum + (t.insulin || 0),
-      0
-    );
+
     const totalBolus = treatments
       .filter(
         (t) =>
@@ -238,14 +276,72 @@ export default function Home() {
           t.eventType.toLowerCase().includes("bolus")
       )
       .reduce((sum, t) => sum + (t.insulin || 0), 0);
-    const totalBasal = treatments
-      .filter(
-        (t) =>
-          t.insulin &&
-          t.eventType &&
-          t.eventType.toLowerCase().includes("basal")
-      )
-      .reduce((sum, t) => sum + (t.insulin || 0), 0);
+
+    // --- Calcul basale réelle délivrée ---
+    function getBasalProfileValueAt(ts: number, profil: any, dateRef: Date) {
+      if (!profil || !Array.isArray(profil)) return 0;
+      // Trouver le profil actif pour le jour
+      const selectedDayTs = new Date(dateRef).setHours(0, 0, 0, 0);
+      const activeProfile = profil
+        .filter((p: any) => p.date <= selectedDayTs)
+        .sort((a: any, b: any) => b.date - a.date)[0];
+      if (!activeProfile) return 0;
+      const basalArray = activeProfile.store[activeProfile.defaultProfile].basal;
+      let last = basalArray[0];
+      for (const b of basalArray) {
+        const d = new Date(dateRef);
+        const [h, m] = b.time.split(":");
+        d.setHours(Number(h), Number(m), 0, 0);
+        if (d.getTime() <= ts) {
+          last = b;
+        } else {
+          break;
+        }
+      }
+      return last.value;
+    }
+
+    // Calcul de la basale délivrée sur toute la période
+    function computeRealBasalPerDay() {
+      if (!profil || !date?.from || !date?.to) return 0;
+      const dayMs = 24 * 60 * 60 * 1000;
+      const fromDay = new Date(date.from);
+      fromDay.setHours(0, 0, 0, 0);
+      const toDay = new Date(date.to);
+      toDay.setHours(0, 0, 0, 0);
+      const nbDays = Math.round((toDay.getTime() - fromDay.getTime()) / dayMs) + 1;
+      let totalBasal = 0;
+      for (let d = 0; d < nbDays; d++) {
+        const day = new Date(fromDay.getTime() + d * dayMs);
+        // Récupérer tous les temp basal de la journée
+        const dayStart = new Date(day); dayStart.setHours(0,0,0,0);
+        const dayEnd = new Date(day); dayEnd.setHours(23,59,59,999);
+        const tempBasals = treatments.filter((t: any) => t.eventType === "Temp Basal" && t.date && t.duration && t.rate && new Date(t.date) >= dayStart && new Date(t.date) <= dayEnd)
+          .map((t: any) => ({
+            start: new Date(t.date).getTime(),
+            end: new Date(t.date).getTime() + t.duration * 60000,
+            rate: t.rate
+          }));
+        // Pour chaque minute de la journée
+        let delivered = 0;
+        for (let min = 0; min < 1440; min++) {
+          const ts = dayStart.getTime() + min * 60000;
+          // Chercher un temp basal actif
+          const temp = tempBasals.find(tb => ts >= tb.start && ts < tb.end);
+          let rate = 0;
+          if (temp) {
+            rate = temp.rate;
+          } else {
+            rate = getBasalProfileValueAt(ts, profil, day);
+          }
+          delivered += rate / 60; // U/min
+        }
+        totalBasal += delivered;
+      }
+      return totalBasal / nbDays;
+    }
+    const realBasalPerDay = computeRealBasalPerDay();
+    const totalInsuline = (totalBolus / jours) + realBasalPerDay;
     // --- Affichage sections ---
     y += 10;
     doc.setFontSize(11);
@@ -309,7 +405,6 @@ export default function Home() {
     const barY = y - 10; // position verticale de départ
     let currentY = barY;
 
-
     // Segment >240 (orange)
     doc.setFillColor(255, 137, 4);
     doc.rect(barX, currentY, 8, barHeight * (pctAbove240 / 100), "F");
@@ -351,18 +446,20 @@ export default function Home() {
     doc.text(`Index de variabilité glycémique (GVI)`, 22, y);
     doc.text(`${gvi.toFixed(2)}`, 90, y);
     doc.text(
-      gvi < 1.2
-        ? "excellent"
-        : gvi < 1.5
-        ? "good (1,2 to 1,5)"
-        : "à surveiller",
+      gvi < 25
+        ? "Excellent"
+        : gvi < 33
+        ? "Bon"
+        : gvi < 40
+        ? "Modéré"
+        : "A surveiller",
       120,
       y
     );
     y += 6;
     doc.text(`Statut glycémique du patient (PGS)`, 22, y);
     doc.text(`${pgs.toFixed(2)}`, 90, y);
-    doc.text(pgs < 100 ? "good (35 to 100)" : "à surveiller", 120, y);
+    doc.text(pgs >= 4.5 ? "Excellent contrôle" : pgs >= 3.5 ? "Bon contrôle" : pgs >= 2.5 ? "Moyen (à surveiller)" : "Mauvais contrôle", 120, y);
     y += 6;
     doc.text(`Glycémie moyenne`, 22, y);
     doc.text(`${mean.toFixed(0)} mg/dL`, 90, y);
@@ -380,16 +477,16 @@ export default function Home() {
     y += 6;
     doc.setFontSize(10);
     doc.text(`Moyenne de glucides par jour`, 22, y);
-    doc.text(`${(totalGlucides / jours).toFixed(1)} g CH`, 90, y);
+    doc.text(`${(totalGlucides / jours).toFixed(1)} g de glucides`, 90, y);
     y += 6;
     doc.text(`Moyenne d'insuline par jour`, 22, y);
-    doc.text(`${(totalInsuline / jours).toFixed(1)} U`, 90, y);
+    doc.text(`${totalInsuline.toFixed(1)} U`, 90, y);
     y += 6;
     doc.text(`Moyenne bolus par jour`, 22, y);
     doc.text(`${(totalBolus / jours).toFixed(1)} bolus`, 90, y);
     y += 6;
     doc.text(`Moyenne basale par jour`, 22, y);
-    doc.text(`${(totalBasal / jours).toFixed(1)} basal`, 90, y);
+    doc.text(`${realBasalPerDay.toFixed(1)} U`, 90, y);
     // --- Fin ---
     // doc.save(`rapport_glycemie_${infos.nom}_${infos.prenom}.pdf`);
     window.open(doc.output("bloburl"), "_blank");

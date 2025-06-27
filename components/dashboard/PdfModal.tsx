@@ -13,6 +13,23 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
   const [insuline, setInsuline] = useState("");
   const [diabeteDepuis, setDiabeteDepuis] = useState("");
 
+  // Pré-remplissage depuis le localStorage à l'ouverture
+  React.useEffect(() => {
+    if (open) {
+      const saved = localStorage.getItem("pdfInfos");
+      if (saved) {
+        try {
+          const infos = JSON.parse(saved);
+          setNom(infos.nom || "");
+          setPrenom(infos.prenom || "");
+          setDateNaissance(infos.dateNaissance || "");
+          setInsuline(infos.insuline || "");
+          setDiabeteDepuis(infos.diabeteDepuis || "");
+        } catch {}
+      }
+    }
+  }, [open]);
+
   if (!open) return null;
 
   return (
@@ -22,6 +39,11 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
         <form
           onSubmit={e => {
             e.preventDefault();
+            // Sauvegarde dans le localStorage
+            localStorage.setItem(
+              "pdfInfos",
+              JSON.stringify({ nom, prenom, dateNaissance, insuline, diabeteDepuis })
+            );
             onGenerate({ nom, prenom, dateNaissance, insuline, diabeteDepuis });
           }}
           className="space-y-4"
