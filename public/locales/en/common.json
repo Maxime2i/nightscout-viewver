@@ -115,6 +115,7 @@
   },
   "ShareLinks": {
     "title": "Share your dashboard",
+    "description": "Share your dashboard with others using the link below.",
     "copyLink": "Copy link"
   },
   "SupportProject": {

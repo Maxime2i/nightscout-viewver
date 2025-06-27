@@ -115,6 +115,7 @@
   },
   "ShareLinks": {
     "title": "Partagez votre tableau de bord",
+    "description": "Partagez votre tableau de bord avec d'autres personnes en utilisant le lien ci-dessous.",
     "copyLink": "Copier le lien"
   },
   "SupportProject": {

@@ -15,7 +15,11 @@ export function ShareLinks() {
       <CardHeader>
         <CardTitle>{t('ShareLinks.title')}</CardTitle>
       </CardHeader>
-      <CardContent className="flex row">
+      <CardContent>
+        <p className="text-sm text-gray-600 mb-2">
+          {t('ShareLinks.description')}
+        </p>
+        <div className="flex row">
         <Input
           type="text"
           value={shareUrl}
@@ -28,6 +32,7 @@ export function ShareLinks() {
         >
           {t('ShareLinks.copyLink')}
         </Button>
+        </div>
       </CardContent>
     </Card>
   );
