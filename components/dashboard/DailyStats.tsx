@@ -50,12 +50,12 @@ export function DailyStats({ data, treatments, selectedDate }: { data: Nightscou
   const percentInRange = dayGlucose.length > 0 ? (inRange / dayGlucose.length) * 100 : 0;
 
   return (
-    <Card className={cn("p-4")}> 
+    <Card className={cn("p-4 w-full")}> 
       <CardHeader>
-        <CardTitle className="text-lg font-bold">{t('DailyStats.title')} {format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })}</CardTitle>
+        <CardTitle className="text-base sm:text-lg font-bold">{t('DailyStats.title')} {format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })}</CardTitle>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-2 text-base">
+        <ul className="space-y-2 text-sm sm:text-base">
           <li><strong>{t('DailyStats.carbsIngested')} :</strong> {totalCarbs.toFixed(0)} g</li>
           <li><strong>{t('DailyStats.insulinBolus')} :</strong> {totalBolus.toFixed(2)} U</li>
           <li><strong>{t('DailyStats.insulinBasal')} :</strong> {totalBasal.toFixed(2)} U</li>

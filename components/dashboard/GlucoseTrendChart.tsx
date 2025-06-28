@@ -183,12 +183,12 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
         <div>
           <CardTitle>{t('GlucoseTrendChart.title')}</CardTitle>
           <CardDescription>{t('GlucoseTrendChart.description')}</CardDescription>
         </div>
-        <div className="flex items-center gap-2 min-w-[320px] justify-center">
+        <div className="flex items-center gap-2 min-w-0 sm:min-w-[320px] justify-center w-full sm:w-auto mt-2 sm:mt-0">
           <button
             onClick={goToPreviousDay}
             aria-label="Jour précédent"
@@ -197,7 +197,7 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
           >
             <ChevronLeft />
           </button>
-          <span className="font-semibold mx-4 min-w-[200px] text-center">
+          <span className="font-semibold mx-2 sm:mx-4 min-w-0 sm:min-w-[200px] text-center truncate">
             {format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })}
           </span>
           <button

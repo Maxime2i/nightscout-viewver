@@ -42,8 +42,8 @@ export default function LoginPage() {
   }, [router]);
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <Card className="w-full max-w-sm">
+    <div className="flex items-center justify-center min-h-screen p-2">
+      <Card className="w-full max-w-xs sm:max-w-sm">
         <CardHeader>
           <CardTitle>{t('LoginPage.title')}</CardTitle>
           <CardDescription>

@@ -29,12 +29,12 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
   };
 
   return (
-    <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-950 border-b">
-      <div className="flex items-center gap-4">
+    <header className="flex flex-col sm:flex-row items-center justify-between p-2 sm:p-4 bg-white dark:bg-gray-950 border-b gap-2 sm:gap-0">
+      <div className="relative w-full flex items-center gap-2 sm:gap-4 sm:w-auto justify-center sm:justify-start">
         <img src="/logo.png" alt="Logo" className="h-8 w-8 border border-black rounded-sm" />
-        <h1 className="text-xl font-bold">{t('Header.title')}</h1>
+        <h1 className="text-lg sm:text-xl font-bold text-center sm:text-left">{t('Header.title')}</h1>
         <Select value={lang} onValueChange={handleLangChange}>
-          <SelectTrigger className="w-24 h-8">
+          <SelectTrigger className="w-20 sm:w-24 h-8">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -42,8 +42,12 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
             <SelectItem value="en">En</SelectItem>
           </SelectContent>
         </Select>
+        {/* Bouton logout mobile absolument positionné */}
+        <Button onClick={logout} className="absolute right-2 top-2 block sm:hidden h-8 px-3">
+          <LogOut className="w-4 h-4" />
+        </Button>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto justify-center sm:justify-end">
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -79,10 +83,11 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
             />
           </PopoverContent>
         </Popover>
-        <Button onClick={onOpenPdfModal} className="h-8 px-4">
+        <Button onClick={onOpenPdfModal} className="h-8 px-3 sm:px-4 w-full sm:w-auto">
           {t('Header.createPdf')}
         </Button>
-        <Button onClick={logout} className="h-8 px-4">
+        {/* Bouton logout desktop */}
+        <Button onClick={logout} className="h-8 px-3 sm:px-4 w-full sm:w-auto hidden sm:block">
           <LogOut className="w-4 h-4" />
         </Button>
       </div>

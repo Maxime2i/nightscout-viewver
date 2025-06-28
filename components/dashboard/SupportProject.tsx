@@ -32,7 +32,7 @@ export function SupportProject() {
         
         <Button 
           onClick={handleBuyMeCoffee}
-          className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
+          className="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg"
         >
           <Coffee className="w-4 h-4 mr-2" />
           {t('SupportProject.buyMeCoffee')}

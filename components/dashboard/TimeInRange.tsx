@@ -70,17 +70,17 @@ export function TimeInRange({
   const percentAbove240 = periodGlucose.length > 0 ? (above240Range / periodGlucose.length) * 100 : 0;
 
   return (
-    <Card className={cn("p-4")}>
+    <Card className={cn("p-4 w-full")}>
       <CardHeader>
-        <CardTitle className="text-lg font-bold">
+        <CardTitle className="text-base sm:text-lg font-bold">
           {t('TimeInRange.title')}
         </CardTitle>
-        <div className="mt-2 flex row">
-          <label htmlFor="period-select" className="mr-2">
+        <div className="mt-2 flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+          <label htmlFor="period-select" className="mr-0 sm:mr-2">
             {t('TimeInRange.selectPeriod')}
           </label>
           <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-40 max-h-6" id="period-select">
+            <SelectTrigger className="w-32 sm:w-40 max-h-6" id="period-select">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -96,7 +96,7 @@ export function TimeInRange({
       </CardHeader>
       <CardContent>
         {/* Graphique barre verticale colorée (4 segments) */}
-        <div className="w-full flex flex-row items-center mb-4 justify-center gap-6">
+        <div className="w-full flex flex-col sm:flex-row items-center mb-4 justify-center gap-4 sm:gap-6">
           <div className="h-48 w-10 flex flex-col rounded overflow-hidden border">
             <div
               className="w-full bg-orange-400 flex items-end justify-center text-xs text-white"

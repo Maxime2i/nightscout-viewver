@@ -132,7 +132,7 @@ export default function Home() {
         setDate={setDate}
         onOpenPdfModal={() => setPdfModalOpen(true)}
       />
-      <main className="flex-1 p-4 md:p-8 space-y-6">
+      <main className="flex-1 p-2 sm:p-4 md:p-8 space-y-4 md:space-y-6 max-w-full w-full mx-auto">
         {loading ? (
           <div className="flex items-center justify-center min-h-[200px]">
             <span className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-2"></span>
@@ -141,8 +141,8 @@ export default function Home() {
         ) : (
           <>
             <StatsGrid data={data} />
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
+            <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+              <div className="lg:col-span-2 min-w-0">
                 <GlucoseTrendChart
                   data={data}
                   treatments={treatments}

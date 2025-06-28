@@ -41,9 +41,9 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <Card className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4">{t('PdfModal.title')}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-0">
+      <Card className="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-md">
+        <h2 className="text-lg sm:text-xl font-bold mb-4">{t('PdfModal.title')}</h2>
         <form
           onSubmit={e => {
             e.preventDefault();
@@ -100,9 +100,9 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
               {t('PdfModal.includeVariabilityChart')}
             </label>
           </div>
-          <div className="flex justify-end space-x-2 pt-2">
-            <Button variant="outline" type="button" className="px-4 py-2 bg-gray-300 rounded" onClick={onClose}>{t('PdfModal.cancel')}</Button>
-            <Button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">{t('PdfModal.generatePdf')}</Button>
+          <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-2">
+            <Button variant="outline" type="button" className="px-4 py-2 bg-gray-300 rounded w-full sm:w-auto" onClick={onClose}>{t('PdfModal.cancel')}</Button>
+            <Button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 w-full sm:w-auto">{t('PdfModal.generatePdf')}</Button>
           </div>
         </form>
       </Card>

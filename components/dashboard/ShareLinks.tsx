@@ -19,19 +19,19 @@ export function ShareLinks() {
         <p className="text-sm text-gray-600 mb-2">
           {t('ShareLinks.description')}
         </p>
-        <div className="flex row">
-        <Input
-          type="text"
-          value={shareUrl}
-          className="form-input block w-full border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          disabled
-        />
-        <Button
-          onClick={() => navigator.clipboard.writeText(shareUrl)}
-          className="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          {t('ShareLinks.copyLink')}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input
+            type="text"
+            value={shareUrl}
+            className="form-input block w-full border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            disabled
+          />
+          <Button
+            onClick={() => navigator.clipboard.writeText(shareUrl)}
+            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto"
+          >
+            {t('ShareLinks.copyLink')}
+          </Button>
         </div>
       </CardContent>
     </Card>

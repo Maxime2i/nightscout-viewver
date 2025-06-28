@@ -30,34 +30,42 @@ export function StatsGrid({ data }: { data: NightscoutEntry[] }) {
   const lowestDate = lowestEntry && lowestEntry.date ? format(new Date(lowestEntry.date), "dd/MM/yyyy HH:mm", { locale: fr }) : "-";
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-1 grid-cols-4 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title={t('StatsGrid.averageGlucose')}
         value={averageGlucose.toFixed(0) + " mg/dL"}
         description={`${timeInRangePercentage.toFixed(0)}% ${t('StatsGrid.inRange')}`}
-        icon={<Target className="h-4 w-4 text-muted-foreground" />}
+        icon={<Target className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />}
         color="bg-blue-50"
+        hideTitle
+        compact
       />
       <StatCard
         title={t('StatsGrid.timeInRange')}
         value={timeInRangePercentage.toFixed(0) + "%"}
         description={t('StatsGrid.timeInRangeDescription')}
-        icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+        icon={<Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />}
         color="bg-green-50"
+        hideTitle
+        compact
       />
       <StatCard
         title={t('StatsGrid.highestGlucose')}
         value={highestGlucose.toFixed(0) + " mg/dL"}
         description={`${highestDate}`}
-        icon={<ArrowUpRight className="h-4 w-4 text-muted-foreground" />}
+        icon={<ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />}
         color="bg-red-50"
+        hideTitle
+        compact
       />
       <StatCard
         title={t('StatsGrid.lowestGlucose')}
         value={lowestGlucose.toFixed(0) + " mg/dL"}
         description={`${lowestDate}`}
-        icon={<ArrowDownRight className="h-4 w-4 text-muted-foreground" />}
+        icon={<ArrowDownRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />}
         color="bg-yellow-50"
+        hideTitle
+        compact
       />
     </div>
   );
