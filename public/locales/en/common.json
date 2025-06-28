@@ -50,7 +50,9 @@
     "includeCharts": "Include daily charts",
     "includeVariabilityChart": "Include variability chart",
     "cancel": "Cancel",
-    "generatePdf": "Generate PDF"
+    "generatePdf": "Generate PDF",
+    "month": "Month",
+    "year": "Year"
   },
   "Header": {
     "title": "DiabExplorer",
