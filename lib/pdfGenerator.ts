@@ -853,6 +853,29 @@ export class NightscoutPdfGenerator {
     // Grille horizontale (mg/dL)
     const minY = 40;
     const maxY = 300;
+   
+    
+    // Lignes de référence (70 et 180 mg/dL)
+    const ref70Y = chartY + chartHeight - ((70 - minY) / (maxY - minY)) * chartHeight;
+    const ref180Y = chartY + chartHeight - ((180 - minY) / (maxY - minY)) * chartHeight;
+    
+    this.doc.setDrawColor(255, 0, 0);
+    this.doc.setLineWidth(1);
+    this.doc.setLineDashPattern([3, 3], 0);
+    // this.doc.line(chartX, ref70Y, chartX + chartWidth, ref70Y);
+    // this.doc.line(chartX, ref180Y, chartX + chartWidth, ref180Y);
+    this.doc.setLineDashPattern([], 0); // Reset dash pattern
+    
+    // Zone cible (70-180 mg/dL) en vert très clair
+    this.doc.setFillColor(144, 238, 144); // Vert clair avec transparence
+    this.doc.rect(chartX, ref180Y, chartWidth, ref70Y - ref180Y, "F");
+    
+    // Dessiner la courbe des moyennes de glycémie par heure
+    this.drawGlucoseAverageCurve(chartX, chartY, chartWidth, chartHeight, minY, maxY);
+
+
+    this.doc.setFillColor(0, 0, 0);
+
     const yTicks = [40, 80, 120, 160, 200, 240, 280, 300];
     
     this.doc.setDrawColor(240, 240, 240);
@@ -880,31 +903,13 @@ export class NightscoutPdfGenerator {
       this.doc.text(`${h.toString().padStart(2, '0')}:00`, x - 8, chartY + chartHeight + 8);
     }
     
-    // Lignes de référence (70 et 180 mg/dL)
-    const ref70Y = chartY + chartHeight - ((70 - minY) / (maxY - minY)) * chartHeight;
-    const ref180Y = chartY + chartHeight - ((180 - minY) / (maxY - minY)) * chartHeight;
-    
-    this.doc.setDrawColor(255, 0, 0);
-    this.doc.setLineWidth(1);
-    this.doc.setLineDashPattern([3, 3], 0);
-    // this.doc.line(chartX, ref70Y, chartX + chartWidth, ref70Y);
-    // this.doc.line(chartX, ref180Y, chartX + chartWidth, ref180Y);
-    this.doc.setLineDashPattern([], 0); // Reset dash pattern
-    
-    // Zone cible (70-180 mg/dL) en vert très clair
-    this.doc.setFillColor(144, 238, 144); // Vert clair avec transparence
-    this.doc.rect(chartX, ref180Y, chartWidth, ref70Y - ref180Y, "F");
-    
-    // Dessiner la courbe des moyennes de glycémie par heure
-    this.drawGlucoseAverageCurve(chartX, chartY, chartWidth, chartHeight, minY, maxY);
-    
     y = chartY + chartHeight + 20;
     
     // Statistiques de variabilité
     this.addVariabilityStatistics(y);
     
     // Légende
-    this.addVariabilityLegend(y + 60);
+    this.addVariabilityLegend(y + 40);
     
     // Labels des axes
     this.doc.setFontSize(10);
@@ -919,14 +924,18 @@ export class NightscoutPdfGenerator {
     
     // Points pour dessiner les courbes
     const avgPoints: { x: number, y: number }[] = [];
+    const p10Points: { x: number, y: number }[] = [];
     const p25Points: { x: number, y: number }[] = [];
     const p75Points: { x: number, y: number }[] = [];
+    const p90Points: { x: number, y: number }[] = [];
     
     // Calculer les coordonnées de chaque point (par intervalles de 5 minutes)
     for (let interval = 0; interval < 288; interval++) { // 24h * 60min / 5min = 288 intervalles
       const avgGlucose = glucoseData.averages[interval];
+      const p10Glucose = glucoseData.p10[interval];
       const p25Glucose = glucoseData.p25[interval];
       const p75Glucose = glucoseData.p75[interval];
+      const p90Glucose = glucoseData.p90[interval];
       
       if (avgGlucose > 0) { // Seulement si on a des données pour cet intervalle
         const timeRatio = interval / 288; // Ratio par rapport à 24h
@@ -934,68 +943,72 @@ export class NightscoutPdfGenerator {
         
         // Coordonnées Y pour chaque courbe
         const avgY = chartY + chartHeight - ((avgGlucose - minY) / (maxY - minY)) * chartHeight;
+        const p10Y = chartY + chartHeight - ((p10Glucose - minY) / (maxY - minY)) * chartHeight;
         const p25Y = chartY + chartHeight - ((p25Glucose - minY) / (maxY - minY)) * chartHeight;
         const p75Y = chartY + chartHeight - ((p75Glucose - minY) / (maxY - minY)) * chartHeight;
+        const p90Y = chartY + chartHeight - ((p90Glucose - minY) / (maxY - minY)) * chartHeight;
         
         avgPoints.push({ x, y: avgY });
+        p10Points.push({ x, y: p10Y });
         p25Points.push({ x, y: p25Y });
         p75Points.push({ x, y: p75Y });
+        p90Points.push({ x, y: p90Y });
       }
     }
     
-    // Dessiner la zone de variabilité (entre P25 et P75) en premier
+    // Dessiner la zone de variabilité 10-90% (en premier, couleur plus foncée)
+    if (p10Points.length >= 2 && p90Points.length >= 2) {
+      this.doc.setFillColor(0, 51, 153); // Bleu foncé
+      this.doc.setDrawColor(0, 51, 153);
+
+      // Concaténer les points du polygone (P90 puis P10 à l'envers)
+      const allPoints = [...p90Points, ...p10Points.slice().reverse()];
+
+      // Convertir en vecteurs relatifs pour jsPDF.lines
+      const relVectors = [];
+      for (let i = 1; i < allPoints.length; i++) {
+        relVectors.push([allPoints[i].x - allPoints[i - 1].x, allPoints[i].y - allPoints[i - 1].y]);
+      }
+
+      // Appel à lines : point de départ absolu, vecteurs relatifs, scale, style, closed
+      this.doc.lines(relVectors, allPoints[0].x, allPoints[0].y, [1, 1], 'F', true);
+    }
+    // Dessiner la zone de variabilité (entre P25 et P75)
     if (p25Points.length >= 2 && p75Points.length >= 2) {
-      this.doc.setFillColor(255, 69, 0, 0.2); // Orange très transparent
-      
-      // Créer un polygon pour la zone entre P25 et P75
-      const polygonPath = [];
-      
-      // Ajouter les points P75 de gauche à droite
-      for (let i = 0; i < p75Points.length; i++) {
-        polygonPath.push([p75Points[i].x, p75Points[i].y]);
+      this.doc.setFillColor(173, 216, 230); // Bleu clair
+      this.doc.setDrawColor(173, 216, 230);
+
+      // Concaténer les points du polygone (P75 puis P25 à l'envers)
+      const allPoints = [...p75Points, ...p25Points.reverse()];
+
+      // Convertir en vecteurs relatifs pour jsPDF.lines
+      const relVectors = [];
+      for (let i = 1; i < allPoints.length; i++) {
+        relVectors.push([allPoints[i].x - allPoints[i - 1].x, allPoints[i].y - allPoints[i - 1].y]);
       }
-      
-      // Ajouter les points P25 de droite à gauche
-      for (let i = p25Points.length - 1; i >= 0; i--) {
-        polygonPath.push([p25Points[i].x, p25Points[i].y]);
-      }
-      
-      // Dessiner le polygon (zone de variabilité)
-      if (polygonPath.length > 0) {
-        this.doc.setDrawColor(255, 69, 0, 0.3);
-        this.doc.setLineWidth(0.3);
-        
-        // Approximation du polygon avec des lignes
-        for (let i = 0; i < p75Points.length - 1; i++) {
-          this.doc.line(p75Points[i].x, p75Points[i].y, p75Points[i + 1].x, p75Points[i + 1].y);
-        }
-        for (let i = 0; i < p25Points.length - 1; i++) {
-          this.doc.line(p25Points[i].x, p25Points[i].y, p25Points[i + 1].x, p25Points[i + 1].y);
-        }
-      }
+
+      // Appel à lines : point de départ absolu, vecteurs relatifs, scale, style, closed
+      this.doc.lines(relVectors, allPoints[0].x, allPoints[0].y, [1, 1], 'F', true);
     }
-    
     // Dessiner la courbe moyenne par-dessus
     if (avgPoints.length >= 2) {
       this.doc.setDrawColor(255, 69, 0); // Rouge-orangé pour la courbe de glycémie moyenne
-      this.doc.setLineWidth(2);
-      
+      this.doc.setLineWidth(0.5);
       // Dessiner les segments de la courbe moyenne
       for (let i = 0; i < avgPoints.length - 1; i++) {
         this.doc.line(avgPoints[i].x, avgPoints[i].y, avgPoints[i + 1].x, avgPoints[i + 1].y);
       }
-      
       // Dessiner des petits cercles aux points de données moyennes
       this.doc.setFillColor(255, 69, 0);
       avgPoints.forEach((point, index) => {
         if (index % 12 === 0) { // Afficher un point toutes les heures (12 intervalles de 5min)
-          this.doc.circle(point.x, point.y, 1, "F");
+          this.doc.circle(point.x, point.y, 0.5, "F");
         }
       });
     }
   }
 
-  private calculateGlucosePercentiles(): { p25: number[], p75: number[], averages: number[] } {
+  private calculateGlucosePercentiles(): { p10: number[], p25: number[], p75: number[], p90: number[], averages: number[] } {
     // 288 intervalles de 5 minutes (24h * 60min / 5min = 288)
     const intervalData = new Array(288).fill(0).map(() => ({ values: [] as number[] }));
     
@@ -1011,8 +1024,10 @@ export class NightscoutPdfGenerator {
     });
     
     // Calculer les percentiles et moyennes pour chaque intervalle
+    const p10Array: number[] = [];
     const p25Array: number[] = [];
     const p75Array: number[] = [];
+    const p90Array: number[] = [];
     const averagesArray: number[] = [];
     
     intervalData.forEach(data => {
@@ -1022,23 +1037,29 @@ export class NightscoutPdfGenerator {
         const n = sortedValues.length;
         
         // Calculer les percentiles
+        const p10Index = Math.floor(n * 0.10);
         const p25Index = Math.floor(n * 0.25);
         const p75Index = Math.floor(n * 0.75);
+        const p90Index = Math.floor(n * 0.90);
         
+        p10Array.push(sortedValues[p10Index] || 0);
         p25Array.push(sortedValues[p25Index] || 0);
         p75Array.push(sortedValues[p75Index] || 0);
+        p90Array.push(sortedValues[p90Index] || 0);
         
         // Calculer la moyenne
         const average = sortedValues.reduce((sum, val) => sum + val, 0) / n;
         averagesArray.push(average);
       } else {
+        p10Array.push(0);
         p25Array.push(0);
         p75Array.push(0);
+        p90Array.push(0);
         averagesArray.push(0);
       }
     });
     
-    return { p25: p25Array, p75: p75Array, averages: averagesArray };
+    return { p10: p10Array, p25: p25Array, p75: p75Array, p90: p90Array, averages: averagesArray };
   }
 
   private addVariabilityStatistics(y: number): void {
@@ -1155,12 +1176,22 @@ export class NightscoutPdfGenerator {
     this.doc.setFontSize(9);
     this.doc.text("Courbe de glycémie moyenne (5min)", x + 20, legendY + 2);
     
+    // Zone 10-90% (nouvelle ligne)
+    x = 25;
+    y += 10;
+    this.doc.setFillColor(0, 51, 153); // Bleu foncé
+    this.doc.rect(x, y - 2, 15, 4, "F");
+    this.doc.setDrawColor(0, 51, 153);
+    this.doc.setLineWidth(0.3);
+    this.doc.rect(x, y - 2, 15, 4, "S");
+    this.doc.text("Zone de variabilité (10%-90%)", x + 20, y + 2);
+    
     // Zone de variabilité (nouvelle ligne)
     x = 25;
     y += 10;
-    this.doc.setFillColor(255, 69, 0, 0.3);
+    this.doc.setFillColor(173, 216, 230); // Bleu clair
     this.doc.rect(x, y - 2, 15, 4, "F");
-    this.doc.setDrawColor(255, 69, 0, 0.5);
+    this.doc.setDrawColor(173, 216, 230);
     this.doc.setLineWidth(0.3);
     this.doc.rect(x, y - 2, 15, 4, "S");
     this.doc.text("Zone de variabilité (25%-75%)", x + 20, y + 2);
@@ -1174,16 +1205,6 @@ export class NightscoutPdfGenerator {
     this.doc.setLineWidth(0.5);
     this.doc.rect(x, y - 2, 15, 4, "S");
     this.doc.text("Zone cible (70-180 mg/dL)", x + 20, y + 2);
-    
-    // Lignes de référence (nouvelle ligne)
-    x = 25;
-    y += 10;
-    this.doc.setDrawColor(255, 0, 0);
-    this.doc.setLineWidth(1);
-    this.doc.setLineDashPattern([3, 3], 0);
-    this.doc.line(x, y, x + 15, y);
-    this.doc.setLineDashPattern([], 0);
-    this.doc.text("Limites cibles (70 et 180 mg/dL)", x + 20, y + 2);
   }
 
   public generate(infos: PatientInfo): void {
