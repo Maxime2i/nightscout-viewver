@@ -32,7 +32,7 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
   return (
     <header className="flex flex-col sm:flex-row items-center justify-between p-2 sm:p-4 bg-white dark:bg-gray-950 border-b gap-2 sm:gap-0">
       <div className="relative w-full flex items-center gap-2 sm:gap-4 sm:w-auto justify-center sm:justify-start">
-        <Image src="/logo.png" alt="Logo" className="h-8 w-8 border border-black rounded-sm" />
+        <Image src="/logo.png" width={32} height={32} alt="Logo DiabExplorer" className="h-8 w-8 border border-black rounded-sm" />
         <h1 className="text-lg sm:text-xl font-bold text-center sm:text-left">{t('Header.title')}</h1>
         <Select value={lang} onValueChange={handleLangChange}>
           <SelectTrigger className="w-20 sm:w-24 h-8">

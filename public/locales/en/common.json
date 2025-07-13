@@ -173,6 +173,11 @@
     "token_error": "Token not received. Check your credentials.",
     "login_success": "Login successful!",
     "login_error_prefix": "Login error:",
-    "send_api_error": "Error while sending to MyDiabby"
+    "send_api_error": "Error while sending to MyDiabby",
+    "modalTitle": "What do you want to send?",
+    "glycemiaLabel": "Glycemia",
+    "bolusLabel": "Bolus",
+    "basalLabel": "Temporary basals",
+    "sendSelected": "Send"
   }
 } 

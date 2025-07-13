@@ -163,7 +163,7 @@ export default function Home() {
                   selectedDate={selectedDate}
                 />
                 <ShareLinks />
-                <SendToMyDiabbyCard data={data} />
+                <SendToMyDiabbyCard data={data} treatments={treatments} />
                 <SupportProject />
                 <FeedbackCard />
                 <PdfModal

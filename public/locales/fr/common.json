@@ -163,7 +163,7 @@
     "stop": "Stopper l'envoi",
     "send": "Envoyer les glycémies",
     "sending": "Envoi en cours, veuillez ne pas fermer la page...",
-    "sent_count": "% envoyées",
+    "sent_count": "envoyées",
     "must_login": "Veuillez vous connecter à MyDiabby.",
     "no_data": "Aucune donnée glycemique à envoyer.",
     "cancelled": "Envoi interrompu par l'utilisateur.",
@@ -173,6 +173,11 @@
     "token_error": "Token non reçu. Vérifiez vos identifiants.",
     "login_success": "Connexion réussie !",
     "login_error_prefix": "Erreur de connexion :",
-    "send_api_error": "Erreur lors de l'envoi à MyDiabby"
+    "send_api_error": "Erreur lors de l'envoi à MyDiabby",
+    "modalTitle": "Que souhaitez-vous envoyer ?",
+    "glycemiaLabel": "Glycémies",
+    "bolusLabel": "Bolus",
+    "basalLabel": "Basals temporaires",
+    "sendSelected": "Envoyer"
   }
 } 
