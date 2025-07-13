@@ -151,5 +151,28 @@
     "token": "Token (optional)",
     "tokenPlaceholder": "Your Nightscout token (if protected)",
     "login": "Login"
+  },
+  "SendToMyDiabbyCard": {
+    "title": "Send to MyDiabby",
+    "description": "Easily share your Nightscout blood glucose data with your medical team on MyDiabby.",
+    "email": "MyDiabby Email",
+    "password": "MyDiabby Password",
+    "connecting": "Connecting...",
+    "login": "Login to MyDiabby",
+    "logout": "Logout",
+    "stop": "Stop sending",
+    "send": "Send blood glucose",
+    "sending": "Sending, please do not close the page...",
+    "sent_count": "% sent",
+    "must_login": "Please login to MyDiabby.",
+    "no_data": "No blood glucose data to send.",
+    "cancelled": "Sending cancelled by user.",
+    "success": "Successfully sent all blood glucose data for the selected period!",
+    "send_error": "Error while sending:",
+    "login_error": "Login error to MyDiabby",
+    "token_error": "Token not received. Check your credentials.",
+    "login_success": "Login successful!",
+    "login_error_prefix": "Login error:",
+    "send_api_error": "Error while sending to MyDiabby"
   }
 } 

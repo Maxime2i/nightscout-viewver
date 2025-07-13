@@ -151,5 +151,28 @@
     "token": "Token (optionnel)",
     "tokenPlaceholder": "Votre token Nightscout (si protégé)",
     "login": "Se connecter"
+  },
+  "SendToMyDiabbyCard": {
+    "title": "Envoyer vers MyDiabby",
+    "description": "Partagez facilement vos glycémies Nightscout avec votre équipe médicale sur MyDiabby.",
+    "email": "Email MyDiabby",
+    "password": "Mot de passe MyDiabby",
+    "connecting": "Connexion en cours...",
+    "login": "Se connecter à MyDiabby",
+    "logout": "Se déconnecter",
+    "stop": "Stopper l'envoi",
+    "send": "Envoyer les glycémies",
+    "sending": "Envoi en cours, veuillez ne pas fermer la page...",
+    "sent_count": "% envoyées",
+    "must_login": "Veuillez vous connecter à MyDiabby.",
+    "no_data": "Aucune donnée glycemique à envoyer.",
+    "cancelled": "Envoi interrompu par l'utilisateur.",
+    "success": "Envoi réussi de toutes les glycémies de la période sélectionnée !",
+    "send_error": "Erreur lors de l'envoi :",
+    "login_error": "Erreur de connexion à MyDiabby",
+    "token_error": "Token non reçu. Vérifiez vos identifiants.",
+    "login_success": "Connexion réussie !",
+    "login_error_prefix": "Erreur de connexion :",
+    "send_api_error": "Erreur lors de l'envoi à MyDiabby"
   }
 } 

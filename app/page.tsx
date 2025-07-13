@@ -16,6 +16,7 @@ import { generateNightscoutPdf } from "@/lib/pdfGenerator";
 import { useTranslation } from 'react-i18next';
 import '../i18n';
 import { NightscoutEntry, NightscoutTreatment, NightscoutProfile } from '@/types/nightscout';
+import { SendToMyDiabbyCard } from "@/components/dashboard/SendToMyDiabbyCard";
 
 export default function Home() {
   const router = useRouter();
@@ -162,6 +163,7 @@ export default function Home() {
                   selectedDate={selectedDate}
                 />
                 <ShareLinks />
+                <SendToMyDiabbyCard data={data} />
                 <SupportProject />
                 <FeedbackCard />
                 <PdfModal
