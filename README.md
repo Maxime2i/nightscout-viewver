@@ -2,6 +2,8 @@
 
 Une application web moderne pour visualiser et analyser les données de votre serveur Nightscout. Conçue pour les personnes atteintes de diabète qui utilisent des systèmes de surveillance continue du glucose (CGM).
 
+<img width="1666" height="1035" alt="image" src="https://github.com/user-attachments/assets/62a94e89-ae59-4a87-b09d-0fb9846821c5" />
+
 ## ✨ Fonctionnalités
 
 ### 📊 Dashboard Interactif
@@ -158,16 +160,6 @@ nightscout-viewer/
 - Basales programmées
 - Cibles glycémiques
 
-## 🎨 Personnalisation
-
-### Thèmes
-L'application supporte les modes sombre et clair automatiquement.
-
-### Composants UI
-Les composants utilisent `class-variance-authority` pour une personnalisation facile des styles.
-
-### Graphiques
-Les graphiques sont entièrement configurables via les props des composants Recharts.
 
 ## 📈 Optimisations SEO
 
@@ -179,8 +171,6 @@ Le projet inclut des optimisations SEO complètes :
 - **Sitemap.xml** automatique
 - **Robots.txt** optimisé
 - **Manifest.json** pour PWA
-
-Voir `SEO_OPTIMIZATIONS.md` pour plus de détails.
 
 ## 🤝 Contribution
 
@@ -195,12 +185,7 @@ Les contributions sont les bienvenues ! Voici comment contribuer :
 ### Standards de Code
 - Utilisez TypeScript pour tout nouveau code
 - Suivez les conventions ESLint configurées
-- Ajoutez des tests pour les nouvelles fonctionnalités
-- Documentez les nouvelles APIs
-
-## 📄 Licence
-
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+- Documentez les nouvelles fonctionnalités
 
 ## 🆘 Support
 
@@ -215,10 +200,6 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 - Vérifiez la période sélectionnée
 - Assurez-vous que des données existent pour cette période
 - Vérifiez les permissions de votre token
-
-### Contact
-- **Issues GitHub** : [Créer une issue](https://github.com/votre-username/nightscout-viewer/issues)
-- **Discussions** : [Forum GitHub](https://github.com/votre-username/nightscout-viewer/discussions)
 
 ## 🙏 Remerciements
 
