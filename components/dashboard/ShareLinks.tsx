@@ -8,7 +8,7 @@ export function ShareLinks() {
   const { t } = useTranslation('common');
   const url = localStorage.getItem("nightscoutUrl");
   const token = localStorage.getItem("nightscoutToken");
-  const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/?nightscoutUrl=${url}&nightscoutToken=${token}`;
+  const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL}/fr/login?nightscoutUrl=${url}&nightscoutToken=${token}`;
 
   return (
     <Card className={cn("p-4")}>

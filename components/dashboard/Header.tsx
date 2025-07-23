@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -16,17 +16,44 @@ import Image from "next/image";
 export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | undefined, setDate: (date: DateRange | undefined) => void, onOpenPdfModal: () => void }) {
   const { t } = useTranslation('common');
   const router = useRouter();
+  
+  // Détecter la locale depuis l'URL
+  const getCurrentLocale = () => {
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      if (pathname.startsWith('/en')) return 'en';
+      if (pathname.startsWith('/fr')) return 'fr';
+    }
+    return 'fr'; // défaut
+  };
+
+  const [lang, setLang] = useState(getCurrentLocale());
+
+  // Initialiser la langue au montage du composant
+  useEffect(() => {
+    const currentLocale = getCurrentLocale();
+    if (i18n.language !== currentLocale) {
+      i18n.changeLanguage(currentLocale);
+      setLang(currentLocale);
+    }
+  }, []);
+
   const logout = () => {
     localStorage.removeItem("nightscoutUrl");
     localStorage.removeItem("nightscoutToken");
-    router.push("/login");
+    // Rediriger vers la page de login avec la locale actuelle
+    const currentLocale = lang || "fr";
+    router.push(`/${currentLocale}/login`);
   };
 
   // Sélecteur de langue
-  const [lang, setLang] = useState(i18n.language || "fr");
   const handleLangChange = (value: string) => {
     setLang(value);
     i18n.changeLanguage(value);
+    // Rediriger vers la nouvelle locale
+    const currentPath = window.location.pathname;
+    const newPath = currentPath.replace(/^\/(fr|en)/, `/${value}`);
+    router.push(newPath);
   };
 
   return (

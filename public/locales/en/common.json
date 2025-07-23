@@ -59,6 +59,19 @@
     "selectDateRange": "Select a date range",
     "createPdf": "Create PDF"
   },
+  "Login": {
+    "title": "Login",
+    "description": "Please enter your Nightscout site URL.",
+    "connectToNightscout": "Connect to Nightscout",
+    "enterYourNightscoutUrl": "Enter your Nightscout server URL",
+    "nightscoutUrl": "Nightscout URL",
+    "urlPlaceholder": "https://your-site.nightscoutpro.com",
+    "token": "Token",
+    "optional": "optional",
+    "tokenPlaceholder": "Your Nightscout token (if protected)",
+    "connect": "Connect",
+    "tokenInfo": "The token is optional but recommended to secure access to your data."
+  },
   "GlucoseTrendChart": {
     "title": "Glucose Trend",
     "description": "Track your glucose throughout the day",

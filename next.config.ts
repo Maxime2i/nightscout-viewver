@@ -31,17 +31,6 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Redirection pour trailing slash
-  async redirects() {
-    return [
-      {
-        source: '/:path*/',
-        destination: '/:path*',
-        permanent: true,
-      },
-    ];
-  },
-
   // Optimisation des images
   images: {
     formats: ['image/webp', 'image/avif'],

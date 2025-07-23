@@ -143,14 +143,18 @@
     "inTarget": "Dans la cible (70-180)",
     "belowTarget": "Sous la cible (<70)"
   },
-  "LoginPage": {
+  "Login": {
     "title": "Connexion",
     "description": "Veuillez entrer l'URL de votre site Nightscout.",
+    "connectToNightscout": "Se connecter à Nightscout",
+    "enterYourNightscoutUrl": "Entrez l'URL de votre serveur Nightscout",
     "nightscoutUrl": "URL Nightscout",
     "urlPlaceholder": "https://votre-site.nightscoutpro.com",
-    "token": "Token (optionnel)",
+    "token": "Token",
+    "optional": "optionnel",
     "tokenPlaceholder": "Votre token Nightscout (si protégé)",
-    "login": "Se connecter"
+    "connect": "Se connecter",
+    "tokenInfo": "Le token est optionnel mais recommandé pour sécuriser l'accès à vos données."
   },
   "SendToMyDiabbyCard": {
     "title": "Envoyer vers MyDiabby",
