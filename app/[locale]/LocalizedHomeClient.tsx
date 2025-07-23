@@ -17,15 +17,16 @@ import { useTranslation } from 'react-i18next';
 import '../../i18n';
 import { NightscoutEntry, NightscoutTreatment, NightscoutProfile } from '@/types/nightscout';
 import { SendToMyDiabbyCard } from "@/components/dashboard/SendToMyDiabbyCard";
-import { GlucoseUnitsProvider } from "@/lib/glucoseUnits";
+import { GlucoseUnitsProvider, useGlucoseUnits } from "@/lib/glucoseUnits";
 
 interface LocalizedHomeClientProps {
   locale: string;
 }
 
-export function LocalizedHomeClient({ locale }: LocalizedHomeClientProps) {
+function LocalizedHomeClientContent({ locale }: LocalizedHomeClientProps) {
   const router = useRouter();
   const { t, i18n } = useTranslation('common');
+  const { unit } = useGlucoseUnits();
   const [url, setUrl] = useState<string | null>(null);
   const [date, setDate] = useState<DateRange | undefined>(() => {
     const to = new Date();
@@ -123,7 +124,8 @@ export function LocalizedHomeClient({ locale }: LocalizedHomeClientProps) {
         date
       },
       infos,
-      t
+      t,
+      unit
     );
     setPdfModalOpen(false);
   };
@@ -136,15 +138,14 @@ export function LocalizedHomeClient({ locale }: LocalizedHomeClientProps) {
     );
   }
 
-  return (
-    <GlucoseUnitsProvider>
-      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Header
-          date={date}
-          setDate={setDate}
-          onOpenPdfModal={() => setPdfModalOpen(true)}
-        />
-        <main className="flex-1 p-2 sm:p-4 md:p-8 space-y-4 md:space-y-6 max-w-full w-full mx-auto">
+    return (
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+      <Header
+        date={date}
+        setDate={setDate}
+        onOpenPdfModal={() => setPdfModalOpen(true)}
+      />
+      <main className="flex-1 p-2 sm:p-4 md:p-8 space-y-4 md:space-y-6 max-w-full w-full mx-auto">
         {loading ? (
           <div className="flex items-center justify-center min-h-[200px]">
             <span className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-2"></span>
@@ -188,6 +189,13 @@ export function LocalizedHomeClient({ locale }: LocalizedHomeClientProps) {
         )}
       </main>
     </div>
+  );
+}
+
+export function LocalizedHomeClient({ locale }: LocalizedHomeClientProps) {
+  return (
+    <GlucoseUnitsProvider>
+      <LocalizedHomeClientContent locale={locale} />
     </GlucoseUnitsProvider>
   );
 } 

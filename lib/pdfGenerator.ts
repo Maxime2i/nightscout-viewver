@@ -13,6 +13,8 @@ interface PatientInfo {
   includeVariabilityChart: boolean;
 }
 
+type GlucoseUnit = 'mg/dL' | 'mmol/L';
+
 interface PdfGenerationData {
   data: NightscoutEntry[];
   treatments: NightscoutTreatment[];
@@ -55,10 +57,27 @@ export class NightscoutPdfGenerator {
   private profil: NightscoutProfile | null;
   private date: DateRange | undefined;
   private t: (key: string) => string;
+  private glucoseUnit: GlucoseUnit;
+
+  private convertGlucose(value: number): number {
+    if (this.glucoseUnit === 'mmol/L') {
+      return value / 18;
+    }
+    return value;
+  }
+
+  private formatGlucose(value: number): string {
+    const convertedValue = this.convertGlucose(value);
+    if (this.glucoseUnit === 'mmol/L') {
+      return `${convertedValue.toFixed(1)} mmol/L`;
+    }
+    return `${Math.round(convertedValue)} mg/dL`;
+  }
 
   constructor(
     { data, treatments, profil, date }: PdfGenerationData,
-    translateFunction: (key: string) => string
+    translateFunction: (key: string) => string,
+    glucoseUnit: GlucoseUnit = 'mg/dL'
   ) {
     this.doc = new jsPDF();
     this.data = data;
@@ -66,6 +85,7 @@ export class NightscoutPdfGenerator {
     this.profil = profil;
     this.date = date;
     this.t = translateFunction;
+    this.glucoseUnit = glucoseUnit;
   }
 
   private getBasalProfileValueAt(ts: number, profil: NightscoutProfile | null, dateRef: Date): number {
@@ -362,7 +382,7 @@ export class NightscoutPdfGenerator {
     // >240 mg/dL (orange)
     this.doc.setFillColor(255, 137, 4);
     this.doc.rect(22, legendY - 4, 4, 4, "F");
-    this.doc.text(`>240 mg/dL`, 28, legendY);
+    this.doc.text(this.glucoseUnit === 'mmol/L' ? `>13.3 mmol/L` : `>240 mg/dL`, 28, legendY);
     this.doc.text(`${stats.pctAbove240} %`, 60, legendY);
     this.doc.text(`${stats.above240.length} ${this.t('PdfGeneration.values')}`, 80, legendY);
     legendY += 12;
@@ -370,7 +390,7 @@ export class NightscoutPdfGenerator {
     // 180–240 mg/dL (jaune)
     this.doc.setFillColor(252, 200, 0);
     this.doc.rect(22, legendY - 4, 4, 4, "F");
-    this.doc.text(`180–240 mg/dL`, 28, legendY);
+    this.doc.text(this.glucoseUnit === 'mmol/L' ? `10.0-13.3 mmol/L` : `180–240 mg/dL`, 28, legendY);
     this.doc.text(`${stats.pct180_240} %`, 60, legendY);
     this.doc.text(`${stats.above180.length} ${this.t('PdfGeneration.values')}`, 80, legendY);
     legendY += 12;
@@ -378,7 +398,7 @@ export class NightscoutPdfGenerator {
     // 70–180 mg/dL (vert)
     this.doc.setFillColor(124, 207, 0);
     this.doc.rect(22, legendY - 4, 4, 4, "F");
-    this.doc.text(`70–180 mg/dL`, 28, legendY);
+    this.doc.text(this.glucoseUnit === 'mmol/L' ? `3.9-10.0 mmol/L` : `70–180 mg/dL`, 28, legendY);
     this.doc.text(`${stats.pctIn} %`, 60, legendY);
     this.doc.text(`${stats.inRange.length} ${this.t('PdfGeneration.values')}`, 80, legendY);
     legendY += 12;
@@ -386,7 +406,7 @@ export class NightscoutPdfGenerator {
     // <70 mg/dL (rouge)
     this.doc.setFillColor(251, 44, 54);
     this.doc.rect(22, legendY - 4, 4, 4, "F");
-    this.doc.text(`<70 mg/dL`, 28, legendY);
+    this.doc.text(this.glucoseUnit === 'mmol/L' ? `<3.9 mmol/L` : `<70 mg/dL`, 28, legendY);
     this.doc.text(`${stats.pctBelow} %`, 60, legendY);
     this.doc.text(`${stats.below70.length} ${this.t('PdfGeneration.values')}`, 80, legendY);
 
@@ -430,15 +450,15 @@ export class NightscoutPdfGenerator {
     this.doc.setFontSize(10);
     
     this.doc.text(this.t('PdfGeneration.lowestValuePeriod'), 22, y);
-    this.doc.text(`${stats.minVal} mg/dL`, 90, y);
+    this.doc.text(this.formatGlucose(stats.minVal), 90, y);
     y += 6;
     
     this.doc.text(this.t('PdfGeneration.highestValuePeriod'), 22, y);
-    this.doc.text(`${stats.maxVal} mg/dL`, 90, y);
+    this.doc.text(this.formatGlucose(stats.maxVal), 90, y);
     y += 6;
     
     this.doc.text(this.t('PdfGeneration.standardDeviation'), 22, y);
-    this.doc.text(`${stats.std.toFixed(1)} mg/dL`, 90, y);
+    this.doc.text(`${this.convertGlucose(stats.std).toFixed(1)} ${this.glucoseUnit}`, 90, y);
     y += 6;
     
     this.doc.text(this.t('PdfGeneration.gvi'), 22, y);
@@ -472,7 +492,7 @@ export class NightscoutPdfGenerator {
     y += 6;
     
     this.doc.text(this.t('PdfGeneration.averageGlucose'), 22, y);
-    this.doc.text(`${stats.mean.toFixed(0)} mg/dL`, 90, y);
+    this.doc.text(this.formatGlucose(stats.mean), 90, y);
     y += 6;
     
     this.doc.text(this.t('PdfGeneration.estimatedHbA1c'), 22, y);
@@ -577,10 +597,12 @@ export class NightscoutPdfGenerator {
     this.doc.setLineWidth(0.5);
     this.doc.rect(chartX, chartY, chartWidth, chartHeight);
     
-    // Grille horizontale (mg/dL)
-    const minY = 40;
-    const maxY = 300;
-    const yTicks = [40, 80, 120, 160, 200, 240, 280, 300];
+    // Grille horizontale (adaptée à l'unité)
+    const minY = this.glucoseUnit === 'mmol/L' ? 2.2 : 40;
+    const maxY = this.glucoseUnit === 'mmol/L' ? 16.7 : 300;
+    const yTicks = this.glucoseUnit === 'mmol/L' 
+      ? [2.2, 4.4, 6.7, 8.9, 11.1, 13.3, 15.6, 16.7]
+      : [40, 80, 120, 160, 200, 240, 280, 300];
     
     this.doc.setDrawColor(240, 240, 240);
     this.doc.setLineWidth(0.3);
@@ -592,7 +614,7 @@ export class NightscoutPdfGenerator {
       // Labels des valeurs
       this.doc.setFontSize(8);
       this.doc.setTextColor(120, 120, 120);
-      this.doc.text(`${val}`, chartX - 15, yPos + 2);
+      this.doc.text(this.glucoseUnit === 'mmol/L' ? val.toFixed(1) : val.toString(), chartX - 15, yPos + 2);
     }
     
     // Grille verticale (heures) - plus détaillée pour un seul jour
@@ -607,9 +629,9 @@ export class NightscoutPdfGenerator {
       this.doc.text(`${h.toString().padStart(2, '0')}:00`, x - 8, chartY + chartHeight + 8);
     }
     
-    // Lignes de référence (70 et 180 mg/dL)
-    const ref70Y = chartY + chartHeight - ((70 - minY) / (maxY - minY)) * chartHeight;
-    const ref180Y = chartY + chartHeight - ((180 - minY) / (maxY - minY)) * chartHeight;
+    // Lignes de référence (adaptées à l'unité)
+    const ref70Y = chartY + chartHeight - ((this.convertGlucose(70) - minY) / (maxY - minY)) * chartHeight;
+    const ref180Y = chartY + chartHeight - ((this.convertGlucose(180) - minY) / (maxY - minY)) * chartHeight;
     
     this.doc.setDrawColor(255, 0, 0);
     this.doc.setLineWidth(1);
@@ -637,7 +659,7 @@ export class NightscoutPdfGenerator {
     // Labels des axes
     this.doc.setFontSize(10);
     this.doc.setTextColor(0, 0, 0);
-    this.doc.text("mg/dL", 5, chartY + chartHeight / 2, { angle: 90 });
+    this.doc.text(this.glucoseUnit, 5, chartY + chartHeight / 2, { angle: 90 });
     this.doc.text("Heure", chartX + chartWidth / 2 - 10, chartY + chartHeight + 20);
   }
 
@@ -651,10 +673,13 @@ export class NightscoutPdfGenerator {
         const hour = entryDate.getHours() + entryDate.getMinutes() / 60;
         const glucose = entry.sgv || entry.glucose;
         
-        if (typeof glucose === 'number' && glucose >= minY && glucose <= maxY) {
-          const x = chartX + (hour / 24) * chartWidth;
-          const y = chartY + chartHeight - ((glucose - minY) / (maxY - minY)) * chartHeight;
-          points.push({x, y});
+        if (typeof glucose === 'number') {
+          const convertedGlucose = this.convertGlucose(glucose);
+          if (convertedGlucose >= minY && convertedGlucose <= maxY) {
+            const x = chartX + (hour / 24) * chartWidth;
+            const y = chartY + chartHeight - ((convertedGlucose - minY) / (maxY - minY)) * chartHeight;
+            points.push({x, y});
+          }
         }
       }
     });
@@ -761,11 +786,11 @@ export class NightscoutPdfGenerator {
     
     y += 8;
     this.doc.setFontSize(9);
-    this.doc.text(`• Glycémie moyenne : ${avgVal.toFixed(0)} mg/dL`, 25, y);
+    this.doc.text(`• Glycémie moyenne : ${this.formatGlucose(avgVal)}`, 25, y);
     y += 6;
-    this.doc.text(`• Min : ${minVal} mg/dL - Max : ${maxVal} mg/dL`, 25, y);
+    this.doc.text(`• Min : ${this.formatGlucose(minVal)} - Max : ${this.formatGlucose(maxVal)}`, 25, y);
     y += 6;
-    this.doc.text(`• Temps dans la cible (70-180) : ${timeInRange}%`, 25, y);
+    this.doc.text(`• Temps dans la cible (${this.glucoseUnit === 'mmol/L' ? '3.9-10.0' : '70-180'}) : ${timeInRange}%`, 25, y);
     y += 6;
     this.doc.text(`• Glucides totaux : ${totalCarbs}g`, 25, y);
     y += 6;
@@ -816,7 +841,7 @@ export class NightscoutPdfGenerator {
     this.doc.setLineDashPattern([3, 3], 0);
     this.doc.line(x, legendY2, x + 15, legendY2);
     this.doc.setLineDashPattern([], 0);
-    this.doc.text("Cibles (70-180 mg/dL)", x + 20, legendY2 + 2);
+    this.doc.text(`Cibles (${this.glucoseUnit === 'mmol/L' ? '3.9-10.0 mmol/L' : '70-180 mg/dL'})`, x + 20, legendY2 + 2);
   }
 
   private addVariabilityChart(): void {
@@ -851,13 +876,13 @@ export class NightscoutPdfGenerator {
     this.doc.rect(chartX, chartY, chartWidth, chartHeight);
     
     // Grille horizontale (mg/dL)
-    const minY = 40;
-    const maxY = 300;
+    const minY = this.glucoseUnit === 'mmol/L' ? 2.2 : 40;
+    const maxY = this.glucoseUnit === 'mmol/L' ? 16.7 : 300;
    
     
-    // Lignes de référence (70 et 180 mg/dL)
-    const ref70Y = chartY + chartHeight - ((70 - minY) / (maxY - minY)) * chartHeight;
-    const ref180Y = chartY + chartHeight - ((180 - minY) / (maxY - minY)) * chartHeight;
+    // Lignes de référence (adaptées à l'unité)
+    const ref70Y = chartY + chartHeight - ((this.convertGlucose(70) - minY) / (maxY - minY)) * chartHeight;
+    const ref180Y = chartY + chartHeight - ((this.convertGlucose(180) - minY) / (maxY - minY)) * chartHeight;
     
     this.doc.setDrawColor(255, 0, 0);
     this.doc.setLineWidth(1);
@@ -876,7 +901,9 @@ export class NightscoutPdfGenerator {
 
     this.doc.setFillColor(0, 0, 0);
 
-    const yTicks = [40, 80, 120, 160, 200, 240, 280, 300];
+    const yTicks = this.glucoseUnit === 'mmol/L' 
+      ? [2.2, 4.4, 6.7, 8.9, 11.1, 13.3, 15.6, 16.7]
+      : [40, 80, 120, 160, 200, 240, 280, 300];
     
     this.doc.setDrawColor(240, 240, 240);
     this.doc.setLineWidth(0.3);
@@ -888,7 +915,7 @@ export class NightscoutPdfGenerator {
       // Labels des valeurs
       this.doc.setFontSize(8);
       this.doc.setTextColor(120, 120, 120);
-      this.doc.text(`${val}`, chartX - 15, yPos + 2);
+      this.doc.text(this.glucoseUnit === 'mmol/L' ? val.toFixed(1) : val.toString(), chartX - 15, yPos + 2);
     }
     
     // Grille verticale (heures) - toutes les 2 heures
@@ -914,7 +941,7 @@ export class NightscoutPdfGenerator {
     // Labels des axes
     this.doc.setFontSize(10);
     this.doc.setTextColor(0, 0, 0);
-    this.doc.text("mg/dL", 5, chartY + chartHeight / 2, { angle: 90 });
+    this.doc.text(this.glucoseUnit, 5, chartY + chartHeight / 2, { angle: 90 });
     this.doc.text("Heure de la journée", chartX + chartWidth / 2 - 25, chartY + chartHeight + 20);
   }
 
@@ -941,12 +968,12 @@ export class NightscoutPdfGenerator {
         const timeRatio = interval / 288; // Ratio par rapport à 24h
         const x = chartX + timeRatio * chartWidth;
         
-        // Coordonnées Y pour chaque courbe
-        const avgY = chartY + chartHeight - ((avgGlucose - minY) / (maxY - minY)) * chartHeight;
-        const p10Y = chartY + chartHeight - ((p10Glucose - minY) / (maxY - minY)) * chartHeight;
-        const p25Y = chartY + chartHeight - ((p25Glucose - minY) / (maxY - minY)) * chartHeight;
-        const p75Y = chartY + chartHeight - ((p75Glucose - minY) / (maxY - minY)) * chartHeight;
-        const p90Y = chartY + chartHeight - ((p90Glucose - minY) / (maxY - minY)) * chartHeight;
+        // Coordonnées Y pour chaque courbe (convertir les valeurs)
+        const avgY = chartY + chartHeight - ((this.convertGlucose(avgGlucose) - minY) / (maxY - minY)) * chartHeight;
+        const p10Y = chartY + chartHeight - ((this.convertGlucose(p10Glucose) - minY) / (maxY - minY)) * chartHeight;
+        const p25Y = chartY + chartHeight - ((this.convertGlucose(p25Glucose) - minY) / (maxY - minY)) * chartHeight;
+        const p75Y = chartY + chartHeight - ((this.convertGlucose(p75Glucose) - minY) / (maxY - minY)) * chartHeight;
+        const p90Y = chartY + chartHeight - ((this.convertGlucose(p90Glucose) - minY) / (maxY - minY)) * chartHeight;
         
         avgPoints.push({ x, y: avgY });
         p10Points.push({ x, y: p10Y });
@@ -1204,7 +1231,7 @@ export class NightscoutPdfGenerator {
     this.doc.setDrawColor(100, 100, 100);
     this.doc.setLineWidth(0.5);
     this.doc.rect(x, y - 2, 15, 4, "S");
-    this.doc.text("Zone cible (70-180 mg/dL)", x + 20, y + 2);
+    this.doc.text(`Zone cible (${this.glucoseUnit === 'mmol/L' ? '3.9-10.0 mmol/L' : '70-180 mg/dL'})`, x + 20, y + 2);
   }
 
   public generate(infos: PatientInfo): void {
@@ -1236,8 +1263,9 @@ export class NightscoutPdfGenerator {
 export function generateNightscoutPdf(
   data: PdfGenerationData,
   patientInfo: PatientInfo,
-  translateFunction: (key: string) => string
+  translateFunction: (key: string) => string,
+  glucoseUnit: GlucoseUnit = 'mg/dL'
 ): void {
-  const generator = new NightscoutPdfGenerator(data, translateFunction);
+  const generator = new NightscoutPdfGenerator(data, translateFunction, glucoseUnit);
   generator.generate(patientInfo);
 }

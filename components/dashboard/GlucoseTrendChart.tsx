@@ -55,7 +55,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 
 export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedDate, profil }: { data: NightscoutEntry[], treatments: NightscoutTreatment[], selectedDate: Date, setSelectedDate: (date: Date) => void, profil?: NightscoutProfile }) {
   const { t } = useTranslation('common');
-  const { convertGlucose, convertRange, unit } = useGlucoseUnits();
+  const { convertGlucose, unit } = useGlucoseUnits();
 
   // Calcul des dates disponibles (jours avec données)
   const availableDates = Array.from(
