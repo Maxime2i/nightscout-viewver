@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { NightscoutEntry } from "@/types/nightscout";
+import { useGlucoseUnits } from "@/lib/glucoseUnits";
 
 export function StatsGrid({ data }: { data: NightscoutEntry[] }) {
   const { t } = useTranslation('common');
+  const { formatGlucose } = useGlucoseUnits();
 
   const averageGlucose = data.reduce((acc, entry) => acc + entry.sgv, 0) / data.length;
   const highestGlucose = data.reduce((acc, entry) => Math.max(acc, entry.sgv), 0);
@@ -33,7 +35,7 @@ export function StatsGrid({ data }: { data: NightscoutEntry[] }) {
     <div className="grid gap-1 grid-cols-4 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title={t('StatsGrid.averageGlucose')}
-        value={averageGlucose.toFixed(0) + " mg/dL"}
+        value={formatGlucose(averageGlucose)}
         description={`${timeInRangePercentage.toFixed(0)}% ${t('StatsGrid.inRange')}`}
         icon={<Target className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />}
         color="bg-blue-50"
@@ -51,7 +53,7 @@ export function StatsGrid({ data }: { data: NightscoutEntry[] }) {
       />
       <StatCard
         title={t('StatsGrid.highestGlucose')}
-        value={highestGlucose.toFixed(0) + " mg/dL"}
+        value={formatGlucose(highestGlucose)}
         description={`${highestDate}`}
         icon={<ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />}
         color="bg-red-50"
@@ -60,7 +62,7 @@ export function StatsGrid({ data }: { data: NightscoutEntry[] }) {
       />
       <StatCard
         title={t('StatsGrid.lowestGlucose')}
-        value={lowestGlucose.toFixed(0) + " mg/dL"}
+        value={formatGlucose(lowestGlucose)}
         description={`${lowestDate}`}
         icon={<ArrowDownRight className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />}
         color="bg-yellow-50"

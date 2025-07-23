@@ -11,7 +11,7 @@
     "highestGlucose": "Highest (7d)",
     "lowestGlucose": "Lowest (7d)",
     "inRange": "in range",
-    "timeInRangeDescription": "Time spent between 70-180 mg/dL"
+    "timeInRangeDescription": "Time spent in target range"
   },
   "QuickActions": {
     "title": "Quick Actions",
@@ -58,6 +58,9 @@
     "title": "DiabExplorer",
     "selectDateRange": "Select a date range",
     "createPdf": "Create PDF"
+  },
+  "GlucoseUnitSelector": {
+    "units": "Units"
   },
   "Login": {
     "title": "Login",
@@ -122,7 +125,7 @@
     "carbsIngested": "Carbs ingested",
     "insulinBolus": "Insulin bolus (meal + correction)",
     "insulinBasal": "Insulin basal (temp basal)",
-    "percentageInTarget": "Percentage of glucose in target range (70-180 mg/dL)"
+    "percentageInTarget": "Percentage of glucose in target range"
   },
   "RecentAlerts": {
     "title": "Recent Alerts",

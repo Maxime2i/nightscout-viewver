@@ -12,6 +12,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import i18n from "../../i18n";
 import { useTranslation } from 'react-i18next';
 import Image from "next/image";
+import { GlucoseUnitSelector } from "@/components/ui/GlucoseUnitSelector";
 
 export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | undefined, setDate: (date: DateRange | undefined) => void, onOpenPdfModal: () => void }) {
   const { t } = useTranslation('common');
@@ -76,6 +77,7 @@ export function Header({ date, setDate, onOpenPdfModal }: { date: DateRange | un
         </Button>
       </div>
       <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto justify-center sm:justify-end">
+        <GlucoseUnitSelector />
         <Popover>
           <PopoverTrigger asChild>
             <Button

@@ -4,9 +4,11 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useTranslation } from 'react-i18next';
 import { NightscoutEntry, NightscoutTreatment } from "@/types/nightscout";
+import { useGlucoseUnits } from "@/lib/glucoseUnits";
 
 export function DailyStats({ data, treatments, selectedDate }: { data: NightscoutEntry[], treatments: NightscoutTreatment[], selectedDate: Date }) {
   const { t } = useTranslation('common');
+  const { convertRange, unit } = useGlucoseUnits();
   // Début et fin de la journée sélectionnée
   const startOfDay = new Date(selectedDate);
   startOfDay.setHours(0, 0, 0, 0);
@@ -46,6 +48,7 @@ export function DailyStats({ data, treatments, selectedDate }: { data: Nightscou
     const d = new Date(e.date);
     return d >= startOfDay && d <= endOfDay && e.sgv;
   });
+  const range = convertRange(70, 180);
   const inRange = dayGlucose.filter(e => e.sgv >= 70 && e.sgv <= 180).length;
   const percentInRange = dayGlucose.length > 0 ? (inRange / dayGlucose.length) * 100 : 0;
 
@@ -59,7 +62,7 @@ export function DailyStats({ data, treatments, selectedDate }: { data: Nightscou
           <li><strong>{t('DailyStats.carbsIngested')} :</strong> {totalCarbs.toFixed(0)} g</li>
           <li><strong>{t('DailyStats.insulinBolus')} :</strong> {totalBolus.toFixed(2)} U</li>
           <li><strong>{t('DailyStats.insulinBasal')} :</strong> {totalBasal.toFixed(2)} U</li>
-          <li><strong>{t('DailyStats.percentageInTarget')} :</strong> {percentInRange.toFixed(0)}%</li>
+          <li><strong>{t('DailyStats.percentageInTarget')} :</strong> {percentInRange.toFixed(0)}% ({range.min.toFixed(1)}-{range.max.toFixed(1)} {unit === 'mmol/L' ? 'mmol/L' : 'mg/dL'})</li>
         </ul>
       </CardContent>
     </Card>

@@ -24,6 +24,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TreatmentChart } from "./TreatmentChart";
 import { useTranslation } from 'react-i18next';
 import { NightscoutEntry, NightscoutTreatment, NightscoutProfile } from "@/types/nightscout";
+import { useGlucoseUnits } from "@/lib/glucoseUnits";
 
 interface TooltipPayload {
   value: number;
@@ -38,11 +39,13 @@ interface CustomTooltipProps {
 }
 
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+  const { formatGlucose } = useGlucoseUnits();
+  
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-2 border rounded-md shadow-lg">
         <p className="font-bold">{label}</p>
-        <p className="text-blue-500">{`Glucose : ${payload[0].value} mg/dL`}</p>
+        <p className="text-blue-500">{`Glucose : ${formatGlucose(payload[0].value)}`}</p>
       </div>
     );
   }
@@ -52,6 +55,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 
 export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedDate, profil }: { data: NightscoutEntry[], treatments: NightscoutTreatment[], selectedDate: Date, setSelectedDate: (date: Date) => void, profil?: NightscoutProfile }) {
   const { t } = useTranslation('common');
+  const { convertGlucose, convertRange, unit } = useGlucoseUnits();
 
   // Calcul des dates disponibles (jours avec données)
   const availableDates = Array.from(
@@ -100,7 +104,7 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
       const d = new Date(e.date);
       return {
         time: format(d, "HH:mm"),
-        glucose: e.sgv,
+        glucose: convertGlucose(e.sgv),
         date: d.getTime(),
       };
     });
@@ -146,6 +150,11 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
 
   const INSULIN_SCALE_FACTOR = 5;
   const CARBS_SCALE_FACTOR = 0.8;
+
+  // Définir les ticks pour l'axe Y selon l'unité
+  const yAxisTicks = unit === 'mmol/L' 
+    ? [2.2, 4.4, 6.7, 8.9, 11.1, 13.3, 15.6, 16.7] // Ticks arrondis pour mmol/L
+    : [40, 80, 120, 160, 200, 240, 280, 300]; // Ticks pour mg/dL
 
   const bolusTreatments = treatments
     .filter(t => {
@@ -222,10 +231,19 @@ export function GlucoseTrendChart({ data, treatments, selectedDate, setSelectedD
               ticks={hourTickTimestamps}
               tickFormatter={formatXAxis}
             />
-            <YAxis domain={[40, 300]} ticks={[40, 80, 120, 160, 200, 240, 280, 300]} />
+            <YAxis 
+              domain={[convertGlucose(40), convertGlucose(300)]} 
+              ticks={yAxisTicks}
+              tickFormatter={(value) => {
+                if (unit === 'mmol/L') {
+                  return value.toFixed(1);
+                }
+                return Math.round(value).toString();
+              }}
+            />
             <Tooltip content={<CustomTooltip />} />
-            <ReferenceLine y={180} stroke="red" strokeDasharray="3 3" />
-            <ReferenceLine y={70} stroke="red" strokeDasharray="3 3" />
+            <ReferenceLine y={convertGlucose(180)} stroke="red" strokeDasharray="3 3" />
+            <ReferenceLine y={convertGlucose(70)} stroke="red" strokeDasharray="3 3" />
 
             {carbTreatments.map((carbs, index) => (
               <ReferenceLine

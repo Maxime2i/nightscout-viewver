@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useTranslation } from 'react-i18next';
 import { NightscoutEntry } from "@/types/nightscout";
+import { useGlucoseUnits } from "@/lib/glucoseUnits";
 
 export function TimeInRange({
   data,
@@ -26,6 +27,7 @@ export function TimeInRange({
   selectedDate: Date;
 }) {
   const { t } = useTranslation('common');
+  const { convertRange, unit } = useGlucoseUnits();
   // Sélecteur de période
   const [period, setPeriod] = useState("1jour");
 
@@ -60,6 +62,8 @@ export function TimeInRange({
     const d = new Date(e.date);
     return d >= startPeriod && d <= endPeriod && e.sgv;
   });
+  const range = convertRange(70, 180);
+  const range180_240 = convertRange(180, 240);
   const inRange = periodGlucose.filter((e) => e.sgv >= 70 && e.sgv <= 180).length;
   const belowRange = periodGlucose.filter((e) => e.sgv < 70).length;
   const above180Range = periodGlucose.filter((e) => e.sgv > 180 && e.sgv <= 240).length;
@@ -116,11 +120,14 @@ export function TimeInRange({
             />
           </div>
           <div className="flex flex-col justify-between h-48 text-xs py-1 gap-1">
-            <span className="text-orange-400 font-bold">{t('TimeInRange.veryAbove')} : {percentAbove240.toFixed(0)}%</span>
-            <span className="text-yellow-400 font-bold">{t('TimeInRange.moderatelyAbove')} : {percentAbove180.toFixed(0)}%</span>
-            <span className="text-green-500 font-bold">{t('TimeInRange.inTarget')} : {percentInRange.toFixed(0)}%</span>
-            <span className="text-red-500 font-bold">{t('TimeInRange.belowTarget')} : {percentBelow.toFixed(0)}%</span>
+            <span className="text-orange-400 font-bold">Très au-dessus ({unit === 'mmol/L' ? '>13.3' : '>240'}) : {percentAbove240.toFixed(0)}%</span>
+            <span className="text-yellow-400 font-bold">Modérément au-dessus ({unit === 'mmol/L' ? `${range180_240.min.toFixed(1)}-${range180_240.max.toFixed(1)}` : '180-240'}) : {percentAbove180.toFixed(0)}%</span>
+            <span className="text-green-500 font-bold">Dans la cible ({unit === 'mmol/L' ? `${range.min.toFixed(1)}-${range.max.toFixed(1)}` : '70-180'}) : {percentInRange.toFixed(0)}%</span>
+            <span className="text-red-500 font-bold">Sous la cible ({unit === 'mmol/L' ? '<3.9' : '<70'}) : {percentBelow.toFixed(0)}%</span>
           </div>
+        </div>
+        <div className="text-center text-xs text-gray-600 mt-2">
+          Plages cibles : {range.min.toFixed(1)}-{range.max.toFixed(1)} {unit === 'mmol/L' ? 'mmol/L' : 'mg/dL'}
         </div>
       </CardContent>
     </Card>

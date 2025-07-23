@@ -11,7 +11,7 @@
     "highestGlucose": "Plus haute (7d)",
     "lowestGlucose": "Plus basse (7d)",
     "inRange": "dans la cible",
-    "timeInRangeDescription": "Temps passé entre 70-180 mg/dL"
+    "timeInRangeDescription": "Temps passé dans la cible"
   },
   "QuickActions": {
     "title": "Actions Rapides",
@@ -58,6 +58,9 @@
     "title": "DiabExplorer",
     "selectDateRange": "Sélectionner une plage de dates",
     "createPdf": "Créer un PDF"
+  },
+  "GlucoseUnitSelector": {
+    "units": "Unités"
   },
   "GlucoseTrendChart": {
     "title": "Tendance glycémique",
@@ -109,7 +112,7 @@
     "carbsIngested": "Glucides ingérés",
     "insulinBolus": "Insuline bolus (repas + correction)",
     "insulinBasal": "Insuline basal (temp basal)",
-    "percentageInTarget": "Pourcentage de glycémie dans la cible (70-180 mg/dL)"
+    "percentageInTarget": "Pourcentage de glycémie dans la cible"
   },
   "RecentAlerts": {
     "title": "Alertes Récentes",
