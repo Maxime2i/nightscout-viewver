@@ -30,7 +30,7 @@ interface MyDiabbyGlycemiaEntry {
   // Ajoutez d'autres champs si besoin
 }
 
-export function SendToMyDiabbyCard({ data, treatments }: { data: NightscoutEntry[], treatments: NightscoutTreatment[] }) {
+export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data: NightscoutEntry[], treatments: NightscoutTreatment[], isDemo?: boolean }) {
   const { t } = useTranslation('common');
   const [token, setToken] = useState("");
   const [email, setEmail] = useState("");
@@ -461,6 +461,12 @@ export function SendToMyDiabbyCard({ data, treatments }: { data: NightscoutEntry
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {isDemo ? (
+          <p className="text-sm text-amber-600 dark:text-amber-400">
+            {t('Demo.mydiabbyDisabled')}
+          </p>
+        ) : (
+          <>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           {t('SendToMyDiabbyCard.description')}
         </p>
@@ -566,6 +572,8 @@ export function SendToMyDiabbyCard({ data, treatments }: { data: NightscoutEntry
           </>
         )}
         {status && <div className="mt-2 text-sm text-center">{status}</div>}
+          </>
+        )}
       </CardContent>
       <CardFooter />
     </Card>

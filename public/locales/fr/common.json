@@ -2,7 +2,7 @@
   "loading": "Chargement des données...",
   "days_evaluated": "Jours évalués",
   "average_insulin": "Insuline moyenne par jour",
-  "average_bolus": "Bolus moyen par jour", 
+  "average_bolus": "Bolus moyen par jour",
   "average_basal": "Basale moyenne par jour",
   "average_carbs": "Glucides moyens par jour",
   "StatsGrid": {
@@ -136,7 +136,7 @@
     "title": "Temps dans la cible",
     "selectPeriod": "Sélectionner une période :",
     "1day": "1 jour",
-    "2days": "2 jours", 
+    "2days": "2 jours",
     "1week": "1 semaine",
     "2weeks": "2 semaines",
     "1month": "1 mois",
@@ -157,7 +157,23 @@
     "optional": "optionnel",
     "tokenPlaceholder": "Votre token Nightscout (si protégé)",
     "connect": "Se connecter",
-    "tokenInfo": "Le token est optionnel mais recommandé pour sécuriser l'accès à vos données."
+    "tokenInfo": "Le token est optionnel mais recommandé pour sécuriser l'accès à vos données.",
+    "or": "ou",
+    "tryDemo": "Essayer la démo",
+    "demoInfo": "Explorez l'application avec des données fictives, sans compte Nightscout."
+  },
+  "Demo": {
+    "banner": "Mode démo — vous consultez des données fictives. Connectez votre Nightscout pour voir vos vraies données.",
+    "aiDisabled": "L'analyse IA est désactivée en mode démo.",
+    "mydiabbyDisabled": "L'envoi vers MyDiabby est désactivé en mode démo."
+  },
+  "AIAnalysisCard": {
+    "title": "Analyse IA des 7 derniers jours",
+    "description": "Envoie tes données des 7 derniers jours à une IA pour obtenir des pistes d'amélioration (moins d'hyper et d'hypoglycémies, courbe plus stable).",
+    "analyze": "Analyser avec l'IA",
+    "analyzing": "Analyse en cours...",
+    "errorGeneric": "Erreur lors de l'analyse. Réessaie plus tard.",
+    "notEnoughData": "Pas assez de données sur les 7 derniers jours pour lancer une analyse."
   },
   "SendToMyDiabbyCard": {
     "title": "Envoyer vers MyDiabby",
@@ -187,4 +203,4 @@
     "basalLabel": "Basals temporaires",
     "sendSelected": "Envoyer"
   }
-} 
+}
