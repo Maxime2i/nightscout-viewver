@@ -146,6 +146,48 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
     return response.json();
   }
 
+  // Envoi groupé de plusieurs glycémies en UN seul appel.
+  // Format PHP validé : glycemia[0][value], glycemia[0][date], ...
+  // Renvoie false si le serveur a rejeté le lot (fallback individuel requis).
+  async function sendGlycemiaBatchToMyDiabby({
+    token,
+    entries,
+  }: {
+    token: string;
+    entries: { date: string; time: string; glycemia: string }[];
+  }) {
+    const url = "https://app.mydiabby.com/api/data";
+    const params: [string, string][] = [
+      ["add", "true"],
+      ["dgnew", "false"],
+    ];
+    entries.forEach((e, i) => {
+      params.push([`glycemia[${i}][value]`, e.glycemia]);
+      params.push([`glycemia[${i}][typemeal]`, "1"]);
+      params.push([`glycemia[${i}][pp]`, "false"]);
+      params.push([`glycemia[${i}][idsurvey]`, "2"]);
+      params.push([`glycemia[${i}][date]`, e.date]);
+      params.push([`glycemia[${i}][time]`, e.time]);
+    });
+    const body = new URLSearchParams(params);
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "X-locale": "fr",
+      },
+      credentials: "include",
+      body: body.toString(),
+    });
+    if (!response.ok) return false;
+    const data = await response.json();
+    // Un lot rejeté renvoie { success: false } — on prévient l'appelant.
+    if (data && data.success === false) return false;
+    return true;
+  }
+
   // Fonction d'envoi d'un bolus (repas ou correction)
   async function sendBolusToMyDiabby({
     token,
@@ -412,16 +454,34 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
         return;
       }
 
-      // 1. Glycémies (avec déduplication + concurrence)
+      // 1. Glycémies (batch par lots de BATCH_SIZE, fallback individuel si lot rejeté)
       if (glycemiaToSend.length > 0) {
-        await runWithConcurrency(glycemiaToSend, CONCURRENCY, async (entry) => {
-          if (cancelRef.current) throw new Error("Envoi interrompu par l'utilisateur.");
+        const BATCH_SIZE = 50;
+        const prepared = glycemiaToSend.map((entry) => {
           const dateObj = new Date(entry.date);
-          const date = dateObj.toISOString().slice(0, 10);
-          const time = dateObj.toTimeString().slice(0, 5);
-          const glycemia = (entry.sgv / 100).toFixed(4);
-          await sendGlycemiaToMyDiabby({ token, glycemia, date, time });
-          bumpProgress();
+          return {
+            date: dateObj.toISOString().slice(0, 10),
+            time: dateObj.toTimeString().slice(0, 5),
+            glycemia: (entry.sgv / 100).toFixed(4),
+          };
+        });
+        const batches: typeof prepared[] = [];
+        for (let i = 0; i < prepared.length; i += BATCH_SIZE) {
+          batches.push(prepared.slice(i, i + BATCH_SIZE));
+        }
+        await runWithConcurrency(batches, CONCURRENCY, async (batch) => {
+          if (cancelRef.current) throw new Error("Envoi interrompu par l'utilisateur.");
+          const ok = await sendGlycemiaBatchToMyDiabby({ token, entries: batch });
+          if (ok) {
+            for (let i = 0; i < batch.length; i++) bumpProgress();
+            return;
+          }
+          // Lot rejeté → fallback : envoi individuel de chaque valeur du lot
+          for (const e of batch) {
+            if (cancelRef.current) throw new Error("Envoi interrompu par l'utilisateur.");
+            await sendGlycemiaToMyDiabby({ token, glycemia: e.glycemia, date: e.date, time: e.time });
+            bumpProgress();
+          }
         });
       }
 
