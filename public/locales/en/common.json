@@ -211,5 +211,140 @@
     "bolusLabel": "Bolus",
     "basalLabel": "Temporary basals",
     "sendSelected": "Send"
+  },
+  "Landing": {
+    "brand": "DiabExplorer",
+    "nav": {
+      "label": "Main navigation",
+      "home": "Back to home",
+      "features": "Features",
+      "how": "How it works",
+      "forWhom": "Who it's for",
+      "login": "Sign in"
+    },
+    "hero": {
+      "badge": "Free · Open source · Your data stays yours",
+      "title1": "Understand your diabetes",
+      "titleAccent": "at a glance.",
+      "subtitle": "DiabExplorer connects to your Nightscout server and turns your glucose data into interactive charts, clear statistics and reports ready for your care team.",
+      "ctaPrimary": "Access my data",
+      "ctaSecondary": "See the features",
+      "trust": "Set up in 30 seconds · No account needed · Demo available",
+      "chartTitle": "Real-time overview",
+      "chartLive": "Live",
+      "chartAria": "Simulated 24-hour glucose curve with target range between 70 and 180 mg/dL",
+      "chartValue": "140",
+      "chartUnit": "mg/dL",
+      "axis00": "12 AM",
+      "axis06": "6 AM",
+      "axis12": "12 PM",
+      "axis18": "6 PM",
+      "chipTir": "Time in range",
+      "chipTirValue": "82 %",
+      "chipAvg": "7-day average",
+      "chipAvgValue": "138 mg/dL",
+      "chipLast": "Last reading",
+      "chipLastValue": "2 min ago"
+    },
+    "how": {
+      "kicker": "How it works",
+      "title": "Three steps, zero friction",
+      "subtitle": "From your Nightscout server to your reports, everything connects in minutes.",
+      "steps": [
+        {
+          "title": "Connect your Nightscout",
+          "description": "Enter your Nightscout server URL and token. Your data stays in your browser: no account to create, nothing to install."
+        },
+        {
+          "title": "Visualize your charts",
+          "description": "Real-time curves, trends, statistics and Time in Range over 14 days, with interactive charts and colored target zones."
+        },
+        {
+          "title": "Share to MyDiabby",
+          "description": "Send your glucose readings to MyDiabby in one click to feed your logbook and prepare your appointments."
+        }
+      ]
+    },
+    "features": {
+      "kicker": "Features",
+      "title": "Everything to track, understand and act",
+      "subtitle": "A complete dashboard, built with the diabetes community (#WeAreNotWaiting).",
+      "items": [
+        {
+          "title": "Real time",
+          "description": "Your CGM readings appear as soon as they reach your Nightscout server."
+        },
+        {
+          "title": "Trends & alerts",
+          "description": "Trend arrows and colored zones to spot glucose variations quickly."
+        },
+        {
+          "title": "Time in Range",
+          "description": "Track your time in range, average, standard deviation and coefficient of variation."
+        },
+        {
+          "title": "Detailed statistics",
+          "description": "Averages, min/max, insulin, carbs: everything is computed automatically for the selected period."
+        },
+        {
+          "title": "PDF & Glooko export",
+          "description": "Generate a professional PDF report for your appointments, or export your data in Glooko format."
+        },
+        {
+          "title": "mg/dL ↔ mmol/L units",
+          "description": "Switch instantly between both units, according to your habits or your team's."
+        }
+      ]
+    },
+    "forWhom": {
+      "kicker": "Who it's for",
+      "title": "Built for every step of the diabetes journey",
+      "subtitle": "One clear view, useful to everyone: the person living with diabetes, their loved ones and their caregivers.",
+      "cards": [
+        {
+          "title": "People with diabetes",
+          "description": "Understand the impact of your meals, activities and treatments day to day, without spending hours on it.",
+          "bullets": [
+            "Charts readable at a glance",
+            "PDF report for every appointment",
+            "No data sent to our servers"
+          ]
+        },
+        {
+          "title": "Parents & loved ones",
+          "description": "Keep a calm eye on your child's data and share clear summaries with the care team.",
+          "bullets": [
+            "Simple, reassuring view",
+            "Summaries ready to share",
+            "Multi-day trend tracking"
+          ]
+        },
+        {
+          "title": "Caregivers",
+          "description": "Find the essentials about a patient at a glance: Time in Range, trends and exportable history.",
+          "bullets": [
+            "Reliable, documented statistics",
+            "PDF export for medical records",
+            "mg/dL and mmol/L support"
+          ]
+        }
+      ]
+    },
+    "cta": {
+      "title": "Ready to see your data differently?",
+      "subtitle": "Connect your Nightscout and get your first clear view in under a minute.",
+      "button": "Sign in"
+    },
+    "footer": {
+      "tagline": "DiabExplorer, open source Nightscout glucose data viewer, built for the diabetes community.",
+      "disclaimer": "Data visualization aid. Not a substitute for medical advice: when in doubt about your health, consult a professional.",
+      "productTitle": "Product",
+      "resourcesTitle": "Resources",
+      "nightscout": "Nightscout website",
+      "mydiabby": "MyDiabby",
+      "github": "GitHub project",
+      "rights": "All rights reserved.",
+      "madeWith": "Made with care for the #WeAreNotWaiting community"
+    }
   }
 }

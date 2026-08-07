@@ -38,7 +38,7 @@ export function StatsGrid({ data }: { data: NightscoutEntry[] }) {
         value={formatGlucose(averageGlucose)}
         description={`${timeInRangePercentage.toFixed(0)}% ${t('StatsGrid.inRange')}`}
         icon={<Target className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />}
-        color="bg-blue-50"
+        color="bg-teal-50"
         hideTitle
         compact
       />

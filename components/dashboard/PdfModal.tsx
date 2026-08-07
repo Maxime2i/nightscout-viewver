@@ -150,17 +150,17 @@ export const PdfModal: React.FC<PdfModalProps> = ({ open, onClose, onGenerate })
               <Input id="insuline" type="text" value={insuline} onChange={e => setInsuline(e.target.value)} required />
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="includeCharts" checked={includeCharts} onCheckedChange={checked => setIncludeCharts(!!checked)} className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 focus:ring-blue-500" />
+              <Checkbox id="includeCharts" checked={includeCharts} onCheckedChange={checked => setIncludeCharts(!!checked)} className="data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600 focus:ring-teal-500" />
               <Label htmlFor="includeCharts">{t('PdfModal.includeCharts')}</Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="includeVariabilityChart" checked={includeVariabilityChart} onCheckedChange={checked => setIncludeVariabilityChart(!!checked)} className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 focus:ring-blue-500" />
+              <Checkbox id="includeVariabilityChart" checked={includeVariabilityChart} onCheckedChange={checked => setIncludeVariabilityChart(!!checked)} className="data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600 focus:ring-teal-500" />
               <Label htmlFor="includeVariabilityChart">{t('PdfModal.includeVariabilityChart')}</Label>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-2">
-            <Button variant="outline" type="button" onClick={onClose} className="w-full sm:w-auto border-blue-600 text-blue-600 hover:bg-blue-50 focus:ring-blue-500">{t('PdfModal.cancel')}</Button>
-            <Button type="submit" className="w-full sm:w-auto bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500">{t('PdfModal.generatePdf')}</Button>
+            <Button variant="outline" type="button" onClick={onClose} className="w-full sm:w-auto border-teal-600 text-teal-600 hover:bg-teal-50 focus:ring-teal-500">{t('PdfModal.cancel')}</Button>
+            <Button type="submit" className="w-full sm:w-auto bg-teal-600 text-white hover:bg-teal-700 focus:ring-teal-500">{t('PdfModal.generatePdf')}</Button>
           </CardFooter>
         </form>
       </Card>

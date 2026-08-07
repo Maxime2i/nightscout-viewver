@@ -559,7 +559,7 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="text-blue-700 hover:text-blue-900 px-2 py-1"
+                className="text-teal-700 hover:text-teal-900 px-2 py-1"
                 disabled={loading}
               >
                 {t('SendToMyDiabbyCard.logout')}
@@ -579,7 +579,7 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
                   <>
                     <Button
                       onClick={() => setOpenSendModal(true)}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      className="w-full bg-teal-600 hover:bg-teal-700"
                       disabled={loading}
                     >
                       {t('SendToMyDiabbyCard.send')}
@@ -601,7 +601,7 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
                           </label>
                         </div>
                         <DialogFooter>
-                          <Button onClick={handleSendAll} className="w-full bg-blue-600 hover:bg-blue-700" disabled={loading}>
+                          <Button onClick={handleSendAll} className="w-full bg-teal-600 hover:bg-teal-700" disabled={loading}>
                             {t('SendToMyDiabbyCard.sendSelected')}
                           </Button>
                         </DialogFooter>
@@ -615,11 +615,11 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
               <>
                 <div className="w-full bg-gray-200 rounded h-4 mb-2 mt-2 overflow-hidden">
                   <div
-                    className="bg-blue-500 h-4 rounded"
+                    className="bg-teal-500 h-4 rounded"
                     style={{ width: `${progress}%`, transition: 'width 0.2s' }}
                   ></div>
                 </div>
-                <div className="text-sm text-blue-700 mb-2">
+                <div className="text-sm text-teal-700 mb-2">
                   {t('SendToMyDiabbyCard.sending')}<br />
                   {progress}% ({Math.round((progress/100)*data.length)}/{data.length} {t('SendToMyDiabbyCard.sent_count')})
                 </div>

@@ -1,4 +1,4 @@
-# 🌙 Nightscout Viewer
+# 🌙 DiabExplorer
 
 Une application web moderne pour visualiser et analyser les données de votre serveur Nightscout. Conçue pour les personnes atteintes de diabète qui utilisent des systèmes de surveillance continue du glucose (CGM).
 

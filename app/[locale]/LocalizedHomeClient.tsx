@@ -176,7 +176,7 @@ function LocalizedHomeClientContent({ locale }: LocalizedHomeClientProps) {
       <main className="flex-1 p-2 sm:p-4 md:p-8 space-y-4 md:space-y-6 max-w-full w-full mx-auto">
         {loading ? (
           <div className="flex items-center justify-center min-h-[200px]">
-            <span className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-2"></span>
+            <span className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500 mr-2"></span>
             <span>{t("loading")}</span>
           </div>
         ) : (

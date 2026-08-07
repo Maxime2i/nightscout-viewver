@@ -38,14 +38,14 @@ export function LocalizedLoginClient({ locale }: LocalizedLoginClientProps) {
     if (url) {
       localStorage.setItem("nightscoutUrl", url);
       localStorage.setItem("nightscoutToken", token);
-      router.push(`/${locale}`);
+      router.push(`/${locale}/dashboard`);
     }
   };
 
   const handleDemo = () => {
     localStorage.setItem("nightscoutUrl", DEMO_NIGHTSCOUT_URL);
     localStorage.setItem("nightscoutToken", DEMO_NIGHTSCOUT_TOKEN);
-    router.push(`/${locale}`);
+    router.push(`/${locale}/dashboard`);
   };
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export function LocalizedLoginClient({ locale }: LocalizedLoginClientProps) {
     if (nightscoutUrl && nightscoutToken) {
       localStorage.setItem("nightscoutUrl", nightscoutUrl);
       localStorage.setItem("nightscoutToken", nightscoutToken);
-      router.push(`/${locale}`);
+      router.push(`/${locale}/dashboard`);
     }
   }, [router, locale]);
 
