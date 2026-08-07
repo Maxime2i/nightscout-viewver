@@ -264,6 +264,59 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
     );
   }
 
+  // Fonction pour récupérer les glycémies déjà présentes sur MyDiabby
+  async function fetchMyDiabbyGlycemia(token: string) {
+    const url = "https://app.mydiabby.com/api/data";
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        Authorization: `Bearer ${token}`,
+        "X-locale": "fr",
+      },
+      credentials: "include",
+    });
+    if (!response.ok) {
+      throw new Error("Erreur lors de la récupération des glycémies MyDiabby");
+    }
+    const data = await response.json();
+    // On ne garde que les glycémies
+    return (data.data?.glycemia || []).filter(
+      (g: MyDiabbyGlycemiaEntry) => g.glycemia && g.glycemia.value
+    );
+  }
+
+  // Fonction de comparaison (glycémie locale <-> glycémie MyDiabby)
+  function isSameGlycemia(local: NightscoutEntry, remote: MyDiabbyGlycemiaEntry) {
+    const localDate = new Date(local.date);
+    const localDateStr = localDate.toISOString().slice(0, 10);
+    const localTimeStr = localDate.toTimeString().slice(0, 5);
+    const localValue = (local.sgv / 100).toFixed(4);
+    const remoteValue = remote.glycemia?.value ? Number(remote.glycemia.value) : NaN;
+    return (
+      remote.date === localDateStr &&
+      remote.time === localTimeStr &&
+      Math.abs(remoteValue - Number(localValue)) < 0.0001
+    );
+  }
+
+  // Pool de concurrence : exécute `worker` sur chaque item avec au plus `limit` tâches simultanées
+  async function runWithConcurrency<T>(
+    items: T[],
+    limit: number,
+    worker: (item: T, index: number) => Promise<void>
+  ) {
+    let nextIndex = 0;
+    const runWorker = async () => {
+      while (nextIndex < items.length) {
+        const current = nextIndex++;
+        await worker(items[current], current);
+      }
+    };
+    const workers = Array.from({ length: Math.min(limit, items.length) }, () => runWorker());
+    await Promise.all(workers);
+  }
+
   // Fonction d'envoi d'un basal temporaire
   async function sendBasalToMyDiabby({
     token,
@@ -302,6 +355,8 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
   }
 
   // Handler global pour l'envoi groupé
+  const CONCURRENCY = 6;
+
   const handleSendAll = async () => {
     setStatus(null);
     setLoading(true);
@@ -312,66 +367,68 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
     try {
       let totalSteps = 0;
       let doneSteps = 0;
-      // On compte le nombre total d'éléments à envoyer pour le progress global
-      let glycemiaCount = 0, bolusCount = 0, basalCount = 0;
-      if (sendGlycemia && data && data.length > 0) glycemiaCount = data.length;
-      if (sendBolus && treatments && treatments.length > 0) {
-        // Même filtrage que dans handleSendBolus
-        const mydiabbyBolusList = await fetchMyDiabbyBolus(token);
-        const bolusTreatments = treatments.filter(
-          (entry) =>
-            (entry.eventType === "Meal Bolus" || entry.eventType === "Correction Bolus") &&
-            typeof entry.insulin === 'number' && entry.date
-        );
-        const bolusToSend = bolusTreatments.filter(
-          (local) => !mydiabbyBolusList.some((remote: MyDiabbyGlycemiaEntry) => isSameBolus(local, remote))
-        );
-        bolusCount = bolusToSend.length;
-      }
-      if (sendBasal && treatments && treatments.length > 0) {
-        const mydiabbyBasalList = await fetchMyDiabbyBasal(token);
-        const basalTreatments = treatments.filter(
-          (entry) => entry.eventType === "Temp Basal" && typeof entry.rate === 'number' && entry.date
-        );
-        const basalToSend = basalTreatments.filter(
-          (local) => !mydiabbyBasalList.some((remote: MyDiabbyGlycemiaEntry) => isSameBasal(local, remote))
-        );
-        basalCount = basalToSend.length;
-      }
-      totalSteps = glycemiaCount + bolusCount + basalCount;
+      const bumpProgress = () => {
+        doneSteps++;
+        setProgress(Math.round((doneSteps / totalSteps) * 100));
+      };
+
+      // Récupère l'existant UNE seule fois (au lieu de 2x par type avant)
+      const [mydiabbyGlycemiaList, mydiabbyBolusList, mydiabbyBasalList] =
+        await Promise.all([
+          sendGlycemia ? fetchMyDiabbyGlycemia(token) : Promise.resolve([] as MyDiabbyGlycemiaEntry[]),
+          sendBolus ? fetchMyDiabbyBolus(token) : Promise.resolve([] as MyDiabbyGlycemiaEntry[]),
+          sendBasal ? fetchMyDiabbyBasal(token) : Promise.resolve([] as MyDiabbyGlycemiaEntry[]),
+        ]);
+
+      // Pré-filtrage : ne garder que ce qui n'existe pas déjà côté MyDiabby
+      const glycemiaToSend = sendGlycemia && data
+        ? data.filter(
+            (entry) => !mydiabbyGlycemiaList.some((remote: MyDiabbyGlycemiaEntry) => isSameGlycemia(entry, remote))
+          )
+        : [];
+      const bolusTreatments = (sendBolus && treatments)
+        ? treatments.filter(
+            (entry) =>
+              (entry.eventType === "Meal Bolus" || entry.eventType === "Correction Bolus") &&
+              typeof entry.insulin === 'number' && entry.date
+          )
+        : [];
+      const bolusToSend = bolusTreatments.filter(
+        (local) => !mydiabbyBolusList.some((remote: MyDiabbyGlycemiaEntry) => isSameBolus(local, remote))
+      );
+      const basalTreatments = (sendBasal && treatments)
+        ? treatments.filter(
+            (entry) => entry.eventType === "Temp Basal" && typeof entry.rate === 'number' && entry.date
+          )
+        : [];
+      const basalToSend = basalTreatments.filter(
+        (local) => !mydiabbyBasalList.some((remote: MyDiabbyGlycemiaEntry) => isSameBasal(local, remote))
+      );
+
+      totalSteps = glycemiaToSend.length + bolusToSend.length + basalToSend.length;
       if (totalSteps === 0) {
-        setStatus("Aucune donnée à envoyer.");
+        setStatus("Aucune donnée à envoyer (tout est déjà synchronisé).");
         setLoading(false);
         return;
       }
-      // 1. Glycémies
-      if (sendGlycemia && data && data.length > 0) {
-        for (let i = 0; i < data.length; i++) {
+
+      // 1. Glycémies (avec déduplication + concurrence)
+      if (glycemiaToSend.length > 0) {
+        await runWithConcurrency(glycemiaToSend, CONCURRENCY, async (entry) => {
           if (cancelRef.current) throw new Error("Envoi interrompu par l'utilisateur.");
-          const entry = data[i];
           const dateObj = new Date(entry.date);
           const date = dateObj.toISOString().slice(0, 10);
           const time = dateObj.toTimeString().slice(0, 5);
           const glycemia = (entry.sgv / 100).toFixed(4);
           await sendGlycemiaToMyDiabby({ token, glycemia, date, time });
-          doneSteps++;
-          setProgress(Math.round((doneSteps / totalSteps) * 100));
-        }
+          bumpProgress();
+        });
       }
-      // 2. Bolus
-      if (sendBolus && treatments && treatments.length > 0) {
-        const mydiabbyBolusList = await fetchMyDiabbyBolus(token);
-        const bolusTreatments = treatments.filter(
-          (entry) =>
-            (entry.eventType === "Meal Bolus" || entry.eventType === "Correction Bolus") &&
-            typeof entry.insulin === 'number' && entry.date
-        );
-        const bolusToSend = bolusTreatments.filter(
-          (local) => !mydiabbyBolusList.some((remote: MyDiabbyGlycemiaEntry) => isSameBolus(local, remote))
-        );
-        for (let i = 0; i < bolusToSend.length; i++) {
+
+      // 2. Bolus (avec déduplication + concurrence)
+      if (bolusToSend.length > 0) {
+        await runWithConcurrency(bolusToSend, CONCURRENCY, async (entry) => {
           if (cancelRef.current) throw new Error("Envoi interrompu par l'utilisateur.");
-          const entry = bolusToSend[i];
           const dateObj = new Date(entry.date);
           const date = dateObj.toISOString().slice(0, 10);
           const time = dateObj.toTimeString().slice(0, 5);
@@ -404,30 +461,21 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
             isCorrection: entry.eventType === "Correction Bolus",
             carbs,
           });
-          doneSteps++;
-          setProgress(Math.round((doneSteps / totalSteps) * 100));
-        }
+          bumpProgress();
+        });
       }
-      // 3. Basals temporaires
-      if (sendBasal && treatments && treatments.length > 0) {
-        const mydiabbyBasalList = await fetchMyDiabbyBasal(token);
-        const basalTreatments = treatments.filter(
-          (entry) => entry.eventType === "Temp Basal" && typeof entry.rate === 'number' && entry.date
-        );
-        const basalToSend = basalTreatments.filter(
-          (local) => !mydiabbyBasalList.some((remote: MyDiabbyGlycemiaEntry) => isSameBasal(local, remote))
-        );
-        for (let i = 0; i < basalToSend.length; i++) {
+
+      // 3. Basals temporaires (avec déduplication + concurrence)
+      if (basalToSend.length > 0) {
+        await runWithConcurrency(basalToSend, CONCURRENCY, async (entry) => {
           if (cancelRef.current) throw new Error("Envoi interrompu par l'utilisateur.");
-          const entry = basalToSend[i];
           const dateObj = new Date(entry.date);
           const date = dateObj.toISOString().slice(0, 10);
           const time = dateObj.toTimeString().slice(0, 5);
           const basal = typeof entry.rate === 'number' ? entry.rate.toFixed(4) : "0.0000";
           await sendBasalToMyDiabby({ token, basal, date, time });
-          doneSteps++;
-          setProgress(Math.round((doneSteps / totalSteps) * 100));
-        }
+          bumpProgress();
+        });
       }
       setStatus("Envoi terminé !");
       setCancelRequested(false);
