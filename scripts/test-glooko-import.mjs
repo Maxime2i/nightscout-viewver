@@ -131,13 +131,38 @@ async function main() {
   const start = new Date(today);
   start.setDate(start.getDate() - 2);
 
+  // Profil patient dynamique (POST /api/account avec le token — comme le composant)
+  let patientLine = "PATIENT;PATIENT;MAN;TYPE 1;" + email;
+  try {
+    const acc = await fetch(`${BASE}/account`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+        "X-locale": "fr",
+      },
+      credentials: "include",
+      body: new URLSearchParams({ language: "fr" }),
+    });
+    if (acc.ok) {
+      const accData = await acc.json();
+      const u = accData?.user;
+      if (u) {
+        const gender = u.sex === "M" ? "MAN" : u.sex === "F" ? "WOMAN" : u.sex || "MAN";
+        const pathology = u.patient?.pathology === "DT1" ? "TYPE 1" : u.patient?.pathology || "TYPE 1";
+        patientLine = `${(u.lastname || "PATIENT").toUpperCase()};${(u.firstname || "PATIENT").toUpperCase()};${gender};${pathology};${u.email || email}`;
+      }
+    }
+  } catch { /* fallback patientLine par défaut */ }
+
   const lines = [
     `GLOOKO XT EXPORT - ${fmtD(today)}`,
     `PERIOD;${fmtD(start)} to ${fmtD(today)}`,
     "TIMEZONE;Europe/Paris",
     "",
     "Lastname;Firstname;Gender;Diabete type;email",
-    "LANGLOIS;MAXIME;WOMAN;TYPE 1;m.langlois982@laposte.net",
+    patientLine,
     "",
     headers.join(";"),
   ];

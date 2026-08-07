@@ -529,6 +529,45 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
       const fmt = (d: Date) => `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
       const fmtD = (d: Date) => `${p(d.getDate())}/${p(d.getMonth() + 1)}/${p(d.getFullYear())}`;
 
+      // Profil patient récupéré depuis le compte MyDiabby connecté (jamais en dur —
+      // le site est utilisé par plusieurs personnes). POST /api/account renvoie user.patient.
+      let patient = { lastname: "", firstname: "", sex: "", pathology: "", email: "" };
+      try {
+        const acc = await fetch("https://app.mydiabby.com/api/account", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", "X-locale": "fr" },
+          credentials: "include",
+          body: new URLSearchParams({ language: "fr" }),
+        });
+        if (acc.ok) {
+          const accData = await acc.json();
+          const u = accData?.user;
+          if (u) {
+            patient = {
+              lastname: u.lastname || "",
+              firstname: u.firstname || "",
+              sex: u.sex || "",
+              pathology: u.patient?.pathology || "",
+              email: u.email || "",
+            };
+          }
+        }
+      } catch {
+        // On garde des valeurs vides : le serveur MyDiabby n'exige pas le nom exact,
+        // le format du fichier prime. L'email du compte reste celui saisi au login.
+      }
+      // Fallback : email saisi au login (état du composant)
+      if (!patient.email && email) patient.email = email;
+
+      // Mapping vers les libellés attendus par le format Glooko XT
+      const genderLabel = patient.sex === "M" ? "MAN" : patient.sex === "F" ? "WOMAN" : patient.sex;
+      const pathologyLabel =
+        patient.pathology === "DT1" ? "TYPE 1" :
+        patient.pathology === "DT2" ? "TYPE 2" :
+        patient.pathology === "DG" ? "GESTATIONAL" :
+        patient.pathology;
+      const patientLine = `${(patient.lastname || "PATIENT").toUpperCase()};${(patient.firstname || "PATIENT").toUpperCase()};${genderLabel || "MAN"};${pathologyLabel || "TYPE 1"};${patient.email || "email@example.com"}`;
+
       // Association bolus → glucides (par identifiant ou fenêtre de 5 min)
       const carbsByIdentifier = new Map<string, number>();
       const carbsByTime = new Map<number, number>();
@@ -579,7 +618,7 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
         "TIMEZONE;Europe/Paris",
         "",
         "Lastname;Firstname;Gender;Diabete type;email",
-        "LANGLOIS;MAXIME;WOMAN;TYPE 1;m.langlois982@laposte.net",
+        patientLine,
         "",
         HEADERS.join(";"),
       ];
