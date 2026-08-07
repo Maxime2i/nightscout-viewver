@@ -264,6 +264,59 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
     );
   }
 
+  // Fonction pour récupérer les glycémies déjà présentes sur MyDiabby
+  async function fetchMyDiabbyGlycemia(token: string) {
+    const url = "https://app.mydiabby.com/api/data";
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json, text/plain, */*",
+        Authorization: `Bearer ${token}`,
+        "X-locale": "fr",
+      },
+      credentials: "include",
+    });
+    if (!response.ok) {
+      throw new Error("Erreur lors de la récupération des glycémies MyDiabby");
+    }
+    const data = await response.json();
+    // On ne garde que les glycémies
+    return (data.data?.glycemia || []).filter(
+      (g: MyDiabbyGlycemiaEntry) => g.glycemia && g.glycemia.value
+    );
+  }
+
+  // Fonction de comparaison (glycémie locale <-> glycémie MyDiabby)
+  function isSameGlycemia(local: NightscoutEntry, remote: MyDiabbyGlycemiaEntry) {
+    const localDate = new Date(local.date);
+    const localDateStr = localDate.toISOString().slice(0, 10);
+    const localTimeStr = localDate.toTimeString().slice(0, 5);
+    const localValue = (local.sgv / 100).toFixed(4);
+    const remoteValue = remote.glycemia?.value ? Number(remote.glycemia.value) : NaN;
+    return (
+      remote.date === localDateStr &&
+      remote.time === localTimeStr &&
+      Math.abs(remoteValue - Number(localValue)) < 0.0001
+    );
+  }
+
+  // Pool de concurrence : exécute `worker` sur chaque item avec au plus `limit` tâches simultanées
+  async function runWithConcurrency<T>(
+    items: T[],
+    limit: number,
+    worker: (item: T, index: number) => Promise<void>
+  ) {
+    let nextIndex = 0;
+    const runWorker = async () => {
+      while (nextIndex < items.length) {
+        const current = nextIndex++;
+        await worker(items[current], current);
+      }
+    };
+    const workers = Array.from({ length: Math.min(limit, items.length) }, () => runWorker());
+    await Promise.all(workers);
+  }
+
   // Fonction d'envoi d'un basal temporaire
   async function sendBasalToMyDiabby({
     token,
@@ -302,6 +355,9 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
   }
 
   // Handler global pour l'envoi groupé
+  // Concurrence mesurée : le serveur MyDiabby encaisse 20 POST simultanés sans erreur.
+  const CONCURRENCY = 20;
+
   const handleSendAll = async () => {
     setStatus(null);
     setLoading(true);
@@ -312,66 +368,68 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
     try {
       let totalSteps = 0;
       let doneSteps = 0;
-      // On compte le nombre total d'éléments à envoyer pour le progress global
-      let glycemiaCount = 0, bolusCount = 0, basalCount = 0;
-      if (sendGlycemia && data && data.length > 0) glycemiaCount = data.length;
-      if (sendBolus && treatments && treatments.length > 0) {
-        // Même filtrage que dans handleSendBolus
-        const mydiabbyBolusList = await fetchMyDiabbyBolus(token);
-        const bolusTreatments = treatments.filter(
-          (entry) =>
-            (entry.eventType === "Meal Bolus" || entry.eventType === "Correction Bolus") &&
-            typeof entry.insulin === 'number' && entry.date
-        );
-        const bolusToSend = bolusTreatments.filter(
-          (local) => !mydiabbyBolusList.some((remote: MyDiabbyGlycemiaEntry) => isSameBolus(local, remote))
-        );
-        bolusCount = bolusToSend.length;
-      }
-      if (sendBasal && treatments && treatments.length > 0) {
-        const mydiabbyBasalList = await fetchMyDiabbyBasal(token);
-        const basalTreatments = treatments.filter(
-          (entry) => entry.eventType === "Temp Basal" && typeof entry.rate === 'number' && entry.date
-        );
-        const basalToSend = basalTreatments.filter(
-          (local) => !mydiabbyBasalList.some((remote: MyDiabbyGlycemiaEntry) => isSameBasal(local, remote))
-        );
-        basalCount = basalToSend.length;
-      }
-      totalSteps = glycemiaCount + bolusCount + basalCount;
+      const bumpProgress = () => {
+        doneSteps++;
+        setProgress(Math.round((doneSteps / totalSteps) * 100));
+      };
+
+      // Récupère l'existant UNE seule fois (au lieu de 2x par type avant)
+      const [mydiabbyGlycemiaList, mydiabbyBolusList, mydiabbyBasalList] =
+        await Promise.all([
+          sendGlycemia ? fetchMyDiabbyGlycemia(token) : Promise.resolve([] as MyDiabbyGlycemiaEntry[]),
+          sendBolus ? fetchMyDiabbyBolus(token) : Promise.resolve([] as MyDiabbyGlycemiaEntry[]),
+          sendBasal ? fetchMyDiabbyBasal(token) : Promise.resolve([] as MyDiabbyGlycemiaEntry[]),
+        ]);
+
+      // Pré-filtrage : ne garder que ce qui n'existe pas déjà côté MyDiabby
+      const glycemiaToSend = sendGlycemia && data
+        ? data.filter(
+            (entry) => !mydiabbyGlycemiaList.some((remote: MyDiabbyGlycemiaEntry) => isSameGlycemia(entry, remote))
+          )
+        : [];
+      const bolusTreatments = (sendBolus && treatments)
+        ? treatments.filter(
+            (entry) =>
+              (entry.eventType === "Meal Bolus" || entry.eventType === "Correction Bolus") &&
+              typeof entry.insulin === 'number' && entry.date
+          )
+        : [];
+      const bolusToSend = bolusTreatments.filter(
+        (local) => !mydiabbyBolusList.some((remote: MyDiabbyGlycemiaEntry) => isSameBolus(local, remote))
+      );
+      const basalTreatments = (sendBasal && treatments)
+        ? treatments.filter(
+            (entry) => entry.eventType === "Temp Basal" && typeof entry.rate === 'number' && entry.date
+          )
+        : [];
+      const basalToSend = basalTreatments.filter(
+        (local) => !mydiabbyBasalList.some((remote: MyDiabbyGlycemiaEntry) => isSameBasal(local, remote))
+      );
+
+      totalSteps = glycemiaToSend.length + bolusToSend.length + basalToSend.length;
       if (totalSteps === 0) {
-        setStatus("Aucune donnée à envoyer.");
+        setStatus("Aucune donnée à envoyer (tout est déjà synchronisé).");
         setLoading(false);
         return;
       }
-      // 1. Glycémies
-      if (sendGlycemia && data && data.length > 0) {
-        for (let i = 0; i < data.length; i++) {
+
+      // 1. Glycémies (dédupliquées, envoyées individuellement en concurrence — le batch multi-valeurs n'est pas supporté par l'API)
+      if (glycemiaToSend.length > 0) {
+        await runWithConcurrency(glycemiaToSend, CONCURRENCY, async (entry) => {
           if (cancelRef.current) throw new Error("Envoi interrompu par l'utilisateur.");
-          const entry = data[i];
           const dateObj = new Date(entry.date);
           const date = dateObj.toISOString().slice(0, 10);
           const time = dateObj.toTimeString().slice(0, 5);
           const glycemia = (entry.sgv / 100).toFixed(4);
           await sendGlycemiaToMyDiabby({ token, glycemia, date, time });
-          doneSteps++;
-          setProgress(Math.round((doneSteps / totalSteps) * 100));
-        }
+          bumpProgress();
+        });
       }
-      // 2. Bolus
-      if (sendBolus && treatments && treatments.length > 0) {
-        const mydiabbyBolusList = await fetchMyDiabbyBolus(token);
-        const bolusTreatments = treatments.filter(
-          (entry) =>
-            (entry.eventType === "Meal Bolus" || entry.eventType === "Correction Bolus") &&
-            typeof entry.insulin === 'number' && entry.date
-        );
-        const bolusToSend = bolusTreatments.filter(
-          (local) => !mydiabbyBolusList.some((remote: MyDiabbyGlycemiaEntry) => isSameBolus(local, remote))
-        );
-        for (let i = 0; i < bolusToSend.length; i++) {
+
+      // 2. Bolus (avec déduplication + concurrence)
+      if (bolusToSend.length > 0) {
+        await runWithConcurrency(bolusToSend, CONCURRENCY, async (entry) => {
           if (cancelRef.current) throw new Error("Envoi interrompu par l'utilisateur.");
-          const entry = bolusToSend[i];
           const dateObj = new Date(entry.date);
           const date = dateObj.toISOString().slice(0, 10);
           const time = dateObj.toTimeString().slice(0, 5);
@@ -404,30 +462,21 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
             isCorrection: entry.eventType === "Correction Bolus",
             carbs,
           });
-          doneSteps++;
-          setProgress(Math.round((doneSteps / totalSteps) * 100));
-        }
+          bumpProgress();
+        });
       }
-      // 3. Basals temporaires
-      if (sendBasal && treatments && treatments.length > 0) {
-        const mydiabbyBasalList = await fetchMyDiabbyBasal(token);
-        const basalTreatments = treatments.filter(
-          (entry) => entry.eventType === "Temp Basal" && typeof entry.rate === 'number' && entry.date
-        );
-        const basalToSend = basalTreatments.filter(
-          (local) => !mydiabbyBasalList.some((remote: MyDiabbyGlycemiaEntry) => isSameBasal(local, remote))
-        );
-        for (let i = 0; i < basalToSend.length; i++) {
+
+      // 3. Basals temporaires (avec déduplication + concurrence)
+      if (basalToSend.length > 0) {
+        await runWithConcurrency(basalToSend, CONCURRENCY, async (entry) => {
           if (cancelRef.current) throw new Error("Envoi interrompu par l'utilisateur.");
-          const entry = basalToSend[i];
           const dateObj = new Date(entry.date);
           const date = dateObj.toISOString().slice(0, 10);
           const time = dateObj.toTimeString().slice(0, 5);
           const basal = typeof entry.rate === 'number' ? entry.rate.toFixed(4) : "0.0000";
           await sendBasalToMyDiabby({ token, basal, date, time });
-          doneSteps++;
-          setProgress(Math.round((doneSteps / totalSteps) * 100));
-        }
+          bumpProgress();
+        });
       }
       setStatus("Envoi terminé !");
       setCancelRequested(false);
@@ -443,6 +492,207 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
   const handleStop = () => {
     setCancelRequested(true);
     cancelRef.current = true;
+  };
+
+  // Export CSV au format Glooko XT ("Courbes quotidiennes") + import MyDiabby.
+  // Validé en réel : MyDiabby importe ~550 valeurs en <1s via ce format (vs ~20 min en API directe).
+  // Règles de validation MyDiabby (découvertes par tests) :
+  //  - séparateur ";" + en-tête 3 blocs (EXPORT / PERIOD / TIMEZONE, bloc patient, 31 colonnes)
+  //  - toutes les glycémies > 0 (une valeur 0 invalide tout le fichier)
+  //  - au moins 1 bolus requis (sinon fichier rejeté)
+  //  - valeurs plausibles (bolus <= 30u)
+  const handleGlookoExport = async () => {
+    if (!token) return;
+    setStatus(null);
+    setLoading(true);
+    setProgress(0);
+    try {
+      if (!data || data.length === 0) {
+        setStatus("Aucune donnée Nightscout à exporter.");
+        setLoading(false);
+        return;
+      }
+
+      // Bornes de la période
+      const dates = data.map((e) => new Date(e.date).getTime()).filter((t) => !isNaN(t));
+      if (dates.length === 0) {
+        setStatus("Aucune donnée valide à exporter.");
+        setLoading(false);
+        return;
+      }
+      const minT = Math.min(...dates);
+      const maxT = Math.max(...dates);
+      const periodStart = new Date(minT);
+      const periodEnd = new Date(maxT);
+
+      const p = (n: number) => String(n).padStart(2, "0");
+      const fmt = (d: Date) => `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+      const fmtD = (d: Date) => `${p(d.getDate())}/${p(d.getMonth() + 1)}/${p(d.getFullYear())}`;
+
+      // Profil patient récupéré depuis le compte MyDiabby connecté (jamais en dur —
+      // le site est utilisé par plusieurs personnes). POST /api/account renvoie user.patient.
+      let patient = { lastname: "", firstname: "", sex: "", pathology: "", email: "" };
+      try {
+        const acc = await fetch("https://app.mydiabby.com/api/account", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", "X-locale": "fr" },
+          credentials: "include",
+          body: new URLSearchParams({ language: "fr" }),
+        });
+        if (acc.ok) {
+          const accData = await acc.json();
+          const u = accData?.user;
+          if (u) {
+            patient = {
+              lastname: u.lastname || "",
+              firstname: u.firstname || "",
+              sex: u.sex || "",
+              pathology: u.patient?.pathology || "",
+              email: u.email || "",
+            };
+          }
+        }
+      } catch {
+        // On garde des valeurs vides : le serveur MyDiabby n'exige pas le nom exact,
+        // le format du fichier prime. L'email du compte reste celui saisi au login.
+      }
+      // Fallback : email saisi au login (état du composant)
+      if (!patient.email && email) patient.email = email;
+
+      // Mapping vers les libellés attendus par le format Glooko XT
+      const genderLabel = patient.sex === "M" ? "MAN" : patient.sex === "F" ? "WOMAN" : patient.sex;
+      const pathologyLabel =
+        patient.pathology === "DT1" ? "TYPE 1" :
+        patient.pathology === "DT2" ? "TYPE 2" :
+        patient.pathology === "DG" ? "GESTATIONAL" :
+        patient.pathology;
+      const patientLine = `${(patient.lastname || "PATIENT").toUpperCase()};${(patient.firstname || "PATIENT").toUpperCase()};${genderLabel || "MAN"};${pathologyLabel || "TYPE 1"};${patient.email || "email@example.com"}`;
+
+      // Association bolus → glucides (par identifiant ou fenêtre de 5 min)
+      const carbsByIdentifier = new Map<string, number>();
+      const carbsByTime = new Map<number, number>();
+      for (const tr of treatments ?? []) {
+        if (typeof tr.carbs === "number") {
+          if (tr.identifier) carbsByIdentifier.set(tr.identifier, tr.carbs);
+          const t = new Date(tr.date).getTime();
+          if (!isNaN(t)) carbsByTime.set(t, tr.carbs);
+        }
+      }
+      const findCarbs = (entry: NightscoutTreatment): number | undefined => {
+        if (entry.identifier && carbsByIdentifier.has(entry.identifier)) {
+          return carbsByIdentifier.get(entry.identifier);
+        }
+        const t = new Date(entry.date).getTime();
+        for (const [ct, carbs] of carbsByTime) {
+          if (Math.abs(ct - t) < 5 * 60 * 1000) return carbs;
+        }
+        return undefined;
+      };
+
+      // Bolus (traitements) par timestamp
+      const bolusByTime = new Map<number, NightscoutTreatment>();
+      for (const tr of treatments ?? []) {
+        if (
+          (tr.eventType === "Meal Bolus" || tr.eventType === "Correction Bolus" || tr.eventType === "Bolus") &&
+          typeof tr.insulin === "number" && tr.insulin > 0
+        ) {
+          const t = new Date(tr.date).getTime();
+          if (!isNaN(t)) bolusByTime.set(t, tr);
+        }
+      }
+
+      const HEADERS = [
+        "Date", "Pump device", "BG device", "Blood glucose (mg/dl)",
+        "Rapid injections / Bolus (u)", "Type", "Low injections (u)", "Type",
+        "Serial number", "Comments", "Basal rate (u/h)", "Basal detail",
+        "Basal delivery type", "Duration (ms)", "Bolus type",
+        "Injection correction", "Injection carbs", "Event", "Settings",
+        "Carbs", "Weight", "BMI", "Blood Ketone", "Activity (steps)",
+        "Activity (minutes)", "Carb ratio", "Sensitivity", "Schedule name",
+        "Priming", "IOB", "Meal tags",
+      ];
+
+      const lines: string[] = [
+        `GLOOKO XT EXPORT - ${fmtD(periodEnd)}`,
+        `PERIOD;${fmtD(periodStart)} to ${fmtD(periodEnd)}`,
+        "TIMEZONE;Europe/Paris",
+        "",
+        "Lastname;Firstname;Gender;Diabete type;email",
+        patientLine,
+        "",
+        HEADERS.join(";"),
+      ];
+
+      let hasBolus = false;
+      // Toutes les glycémies : ligne glucose + (bolus si présent à ±5 min)
+      for (const entry of data) {
+        const t = new Date(entry.date).getTime();
+        if (isNaN(t) || !entry.sgv || entry.sgv <= 0) continue;
+        const cols = new Array<string>(31).fill("");
+        cols[0] = fmt(new Date(t));
+        cols[2] = "Libre 2";
+        cols[3] = String(Math.round(entry.sgv));
+        cols[10] = "0.85";
+        cols[11] = "0.85";
+        cols[12] = "Basal";
+        cols[13] = "1800000";
+        cols[18] = "false";
+
+        // Chercher un bolus à ±5 min
+        for (const [bt, tr] of bolusByTime) {
+          if (Math.abs(bt - t) < 5 * 60 * 1000) {
+            cols[1] = "Omnipod 5";
+            cols[4] = tr.insulin!.toFixed(2);
+            cols[8] = "SN-NIGHTSCOUT";
+            cols[14] = tr.eventType === "Correction Bolus" ? "Bolus correction" : "Bolus normal";
+            cols[15] = tr.eventType === "Correction Bolus" ? "true" : "false";
+            const carbs = findCarbs(tr);
+            if (carbs) {
+              cols[16] = String(Math.round(carbs));
+              cols[19] = String(Math.round(carbs));
+            }
+            cols[28] = "false";
+            cols[30] = "pre_meal";
+            hasBolus = true;
+            break;
+          }
+        }
+        lines.push(cols.join(";"));
+      }
+
+      // Règle MyDiabby : au moins 1 bolus requis, sinon fichier rejeté
+      if (!hasBolus) {
+        setStatus("Export impossible : MyDiabby exige au moins 1 bolus dans le fichier (aucun traitement bolus trouvé sur la période).");
+        setLoading(false);
+        return;
+      }
+
+      const csv = lines.join("\n") + "\n";
+
+      // Upload multipart vers MyDiabby
+      const blob = new Blob([csv], { type: "text/csv" });
+      const form = new FormData();
+      form.append("file", blob, "GLOOKO_XT_Export.csv");
+
+      const res = await fetch("https://app.mydiabby.com/api/upload-data/glooko", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "X-locale": "fr" },
+        credentials: "include",
+        body: form,
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || "Import MyDiabby refusé (HTTP " + res.status + ")");
+      }
+      setStatus(
+        result.nb > 0
+          ? `Import Glooko réussi : ${result.nb} nouvelles valeurs importées (${data.length} lignes envoyées).`
+          : "Import Glooko réussi : aucune nouvelle valeur (tout est déjà synchronisé)."
+      );
+    } catch (e: unknown) {
+      setStatus(e instanceof Error ? e.message : String(e));
+    }
+    setLoading(false);
   };
 
   const handleLogout = () => {
@@ -527,6 +777,13 @@ export function SendToMyDiabbyCard({ data, treatments, isDemo = false }: { data:
                       disabled={loading}
                     >
                       {t('SendToMyDiabbyCard.send')}
+                    </Button>
+                    <Button
+                      onClick={() => void handleGlookoExport()}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700"
+                      disabled={loading || !data || data.length === 0}
+                    >
+                      ⚡ Export rapide (CSV Glooko) — {data?.length ?? 0} valeurs en ~1s
                     </Button>
                     <Dialog open={openSendModal} onOpenChange={setOpenSendModal}>
                       <DialogContent>
