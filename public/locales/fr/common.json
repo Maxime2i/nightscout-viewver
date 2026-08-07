@@ -202,5 +202,140 @@
     "bolusLabel": "Bolus",
     "basalLabel": "Basals temporaires",
     "sendSelected": "Envoyer"
+  },
+  "Landing": {
+    "brand": "Nightscout Viewer",
+    "nav": {
+      "label": "Navigation principale",
+      "home": "Retour à l'accueil",
+      "features": "Fonctionnalités",
+      "how": "Comment ça marche",
+      "forWhom": "Pour qui",
+      "login": "Se connecter"
+    },
+    "hero": {
+      "badge": "Gratuit · Open source · Vos données restent les vôtres",
+      "title1": "Comprenez votre diabète",
+      "titleAccent": "d'un seul coup d'œil.",
+      "subtitle": "Nightscout Viewer se connecte à votre serveur Nightscout et transforme vos données de glycémie en courbes interactives, statistiques claires et rapports prêts pour vos soignants.",
+      "ctaPrimary": "Accéder à mes données",
+      "ctaSecondary": "Voir les fonctionnalités",
+      "trust": "Connexion en 30 secondes · Aucune inscription · Démo disponible",
+      "chartTitle": "Aperçu temps réel",
+      "chartLive": "En direct",
+      "chartAria": "Courbe de glycémie simulée sur 24 heures avec zone cible entre 70 et 180 mg/dL",
+      "chartValue": "140",
+      "chartUnit": "mg/dL",
+      "axis00": "00h",
+      "axis06": "06h",
+      "axis12": "12h",
+      "axis18": "18h",
+      "chipTir": "Temps dans la cible",
+      "chipTirValue": "82 %",
+      "chipAvg": "Moyenne 7 jours",
+      "chipAvgValue": "138 mg/dL",
+      "chipLast": "Dernière lecture",
+      "chipLastValue": "il y a 2 min"
+    },
+    "how": {
+      "kicker": "Comment ça marche",
+      "title": "Trois étapes, zéro friction",
+      "subtitle": "De votre serveur Nightscout à vos rapports, tout se connecte en quelques minutes.",
+      "steps": [
+        {
+          "title": "Connectez votre Nightscout",
+          "description": "Entrez l'URL de votre serveur Nightscout et votre token. Vos données restent dans votre navigateur : aucun compte à créer, rien à installer."
+        },
+        {
+          "title": "Visualisez vos courbes",
+          "description": "Courbes en temps réel, tendances, statistiques et Time in Range sur 14 jours, avec des graphiques interactifs et des zones cibles colorées."
+        },
+        {
+          "title": "Partagez vers MyDiabby",
+          "description": "Envoyez vos glycémies vers MyDiabby en un clic pour alimenter votre carnet et préparer vos consultations."
+        }
+      ]
+    },
+    "features": {
+      "kicker": "Fonctionnalités",
+      "title": "Tout pour suivre, comprendre et agir",
+      "subtitle": "Un tableau de bord complet, pensé avec la communauté du diabète (#WeAreNotWaiting).",
+      "items": [
+        {
+          "title": "Temps réel",
+          "description": "Vos lectures CGM apparaissent dès qu'elles arrivent sur votre serveur Nightscout."
+        },
+        {
+          "title": "Tendances & alertes",
+          "description": "Flèches de tendance et zones colorées pour repérer rapidement les variations de glycémie."
+        },
+        {
+          "title": "Time in Range",
+          "description": "Suivez votre temps dans la cible, la moyenne, l'écart-type et le coefficient de variation."
+        },
+        {
+          "title": "Statistiques détaillées",
+          "description": "Moyennes, min/max, insuline, glucides : tout est calculé automatiquement sur la période choisie."
+        },
+        {
+          "title": "Export PDF & Glooko",
+          "description": "Générez un rapport PDF professionnel pour vos consultations, ou exportez vos données au format Glooko."
+        },
+        {
+          "title": "Unités mg/dL ↔ mmol/L",
+          "description": "Basculez instantanément entre les deux unités, selon vos habitudes ou celles de votre équipe."
+        }
+      ]
+    },
+    "forWhom": {
+      "kicker": "Pour qui",
+      "title": "Pensé pour tout le parcours du diabète",
+      "subtitle": "Une seule vue claire, utile à chacun : la personne concernée, ses proches et ses soignants.",
+      "cards": [
+        {
+          "title": "Personnes diabétiques",
+          "description": "Comprenez l'impact de vos repas, activités et traitements au quotidien, sans y passer des heures.",
+          "bullets": [
+            "Courbes lisibles en un regard",
+            "Rapport PDF pour chaque consultation",
+            "Aucune donnée envoyée sur nos serveurs"
+          ]
+        },
+        {
+          "title": "Parents & proches",
+          "description": "Gardez un œil serein sur les données de votre enfant et partagez des synthèses claires avec l'équipe soignante.",
+          "bullets": [
+            "Vue simple et rassurante",
+            "Synthèses prêtes à partager",
+            "Suivi des tendances sur plusieurs jours"
+          ]
+        },
+        {
+          "title": "Soignants",
+          "description": "Retrouvez l'essentiel d'un patient en un coup d'œil : Time in Range, tendances et historique exportable.",
+          "bullets": [
+            "Statistiques fiables et documentées",
+            "Export PDF pour le dossier médical",
+            "Compatible unités mg/dL et mmol/L"
+          ]
+        }
+      ]
+    },
+    "cta": {
+      "title": "Prêt à voir vos données autrement ?",
+      "subtitle": "Connectez votre Nightscout et obtenez votre première vue claire en moins d'une minute.",
+      "button": "Se connecter"
+    },
+    "footer": {
+      "tagline": "Visualiseur open source de données de glycémie Nightscout, conçu pour la communauté du diabète.",
+      "disclaimer": "Outil d'aide à la visualisation de données. Ne remplace pas un avis médical : en cas de doute sur votre santé, consultez un professionnel.",
+      "productTitle": "Produit",
+      "resourcesTitle": "Ressources",
+      "nightscout": "Site Nightscout",
+      "mydiabby": "MyDiabby",
+      "github": "Projet GitHub",
+      "rights": "Tous droits réservés.",
+      "madeWith": "Fait avec soin pour la communauté #WeAreNotWaiting"
+    }
   }
 }
