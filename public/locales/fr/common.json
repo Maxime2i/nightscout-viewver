@@ -204,7 +204,7 @@
     "sendSelected": "Envoyer"
   },
   "Landing": {
-    "brand": "Nightscout Viewer",
+    "brand": "DiabExplorer",
     "nav": {
       "label": "Navigation principale",
       "home": "Retour à l'accueil",
@@ -217,7 +217,7 @@
       "badge": "Gratuit · Open source · Vos données restent les vôtres",
       "title1": "Comprenez votre diabète",
       "titleAccent": "d'un seul coup d'œil.",
-      "subtitle": "Nightscout Viewer se connecte à votre serveur Nightscout et transforme vos données de glycémie en courbes interactives, statistiques claires et rapports prêts pour vos soignants.",
+      "subtitle": "DiabExplorer se connecte à votre serveur Nightscout et transforme vos données de glycémie en courbes interactives, statistiques claires et rapports prêts pour vos soignants.",
       "ctaPrimary": "Accéder à mes données",
       "ctaSecondary": "Voir les fonctionnalités",
       "trust": "Connexion en 30 secondes · Aucune inscription · Démo disponible",
@@ -327,7 +327,7 @@
       "button": "Se connecter"
     },
     "footer": {
-      "tagline": "Visualiseur open source de données de glycémie Nightscout, conçu pour la communauté du diabète.",
+      "tagline": "DiabExplorer, visualiseur open source de données de glycémie Nightscout, conçu pour la communauté du diabète.",
       "disclaimer": "Outil d'aide à la visualisation de données. Ne remplace pas un avis médical : en cas de doute sur votre santé, consultez un professionnel.",
       "productTitle": "Produit",
       "resourcesTitle": "Ressources",

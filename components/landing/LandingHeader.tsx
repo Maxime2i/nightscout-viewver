@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/Logo";
 
 interface LandingHeaderProps {
   locale: string;
@@ -26,16 +26,7 @@ export function LandingHeader({ locale }: LandingHeaderProps) {
           className="flex items-center gap-2.5"
           aria-label={t("Landing.nav.home")}
         >
-          <Image
-            src="/logo.png"
-            width={32}
-            height={32}
-            alt=""
-            className="h-8 w-8 rounded-md"
-          />
-          <span className="text-base font-semibold tracking-tight text-slate-900">
-            {t("Landing.brand")}
-          </span>
+          <Logo />
         </Link>
 
         <nav

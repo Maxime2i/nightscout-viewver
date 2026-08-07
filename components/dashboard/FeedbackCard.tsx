@@ -57,7 +57,7 @@ export const FeedbackCard = () => {
           {error && <p className="text-red-600 text-sm">{error}</p>}
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row justify-end pt-4 gap-2">
-          <Button type="submit" disabled={sending || !message.trim()} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 w-full sm:w-auto">
+          <Button type="submit" disabled={sending || !message.trim()} className="bg-teal-600 text-white px-4 py-2 rounded hover:bg-teal-700 disabled:opacity-50 w-full sm:w-auto">
             {sending ? t('FeedbackCard.sending') : t('FeedbackCard.send')}
           </Button>
         </CardFooter>

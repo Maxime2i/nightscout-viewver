@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import { Github, ExternalLink } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 interface LandingFooterProps {
   locale: string;
@@ -44,16 +44,7 @@ export function LandingFooter({ locale }: LandingFooterProps) {
         <div className="grid gap-10 md:grid-cols-[2fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <Image
-                src="/logo.png"
-                width={32}
-                height={32}
-                alt=""
-                className="h-8 w-8 rounded-md"
-              />
-              <span className="text-base font-semibold tracking-tight text-slate-900">
-                {t("Landing.brand")}
-              </span>
+            <Logo />
             </div>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-slate-600">
               {t("Landing.footer.tagline")}

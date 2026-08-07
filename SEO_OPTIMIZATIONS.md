@@ -1,4 +1,4 @@
-# Optimisations SEO - Nightscout Viewer
+# Optimisations SEO - DiabExplorer
 
 ## ✅ Optimisations implémentées
 

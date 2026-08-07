@@ -213,7 +213,7 @@
     "sendSelected": "Send"
   },
   "Landing": {
-    "brand": "Nightscout Viewer",
+    "brand": "DiabExplorer",
     "nav": {
       "label": "Main navigation",
       "home": "Back to home",
@@ -226,7 +226,7 @@
       "badge": "Free · Open source · Your data stays yours",
       "title1": "Understand your diabetes",
       "titleAccent": "at a glance.",
-      "subtitle": "Nightscout Viewer connects to your Nightscout server and turns your glucose data into interactive charts, clear statistics and reports ready for your care team.",
+      "subtitle": "DiabExplorer connects to your Nightscout server and turns your glucose data into interactive charts, clear statistics and reports ready for your care team.",
       "ctaPrimary": "Access my data",
       "ctaSecondary": "See the features",
       "trust": "Set up in 30 seconds · No account needed · Demo available",
@@ -336,7 +336,7 @@
       "button": "Sign in"
     },
     "footer": {
-      "tagline": "Open source Nightscout glucose data viewer, built for the diabetes community.",
+      "tagline": "DiabExplorer, open source Nightscout glucose data viewer, built for the diabetes community.",
       "disclaimer": "Data visualization aid. Not a substitute for medical advice: when in doubt about your health, consult a professional.",
       "productTitle": "Product",
       "resourcesTitle": "Resources",

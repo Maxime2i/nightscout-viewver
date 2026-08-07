@@ -2,13 +2,13 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Nightscout Viewer - Visualisateur de glycémie',
-    short_name: 'Nightscout Viewer',
+    name: 'DiabExplorer - Visualisateur de glycémie',
+    short_name: 'DiabExplorer',
     description: 'Analysez et visualisez vos données de glycémie Nightscout avec des graphiques interactifs',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
-    theme_color: '#4f46e5',
+    theme_color: '#0d9488',
     orientation: 'portrait-primary',
     categories: ['health', 'medical', 'lifestyle'],
     icons: [
